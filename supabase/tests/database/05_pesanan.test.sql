@@ -7,6 +7,8 @@ select plan(78);
 -- ---------- Data (tes tidak bergantung pada seed; semua di-rollback) ----------
 delete from public.orders;
 delete from public.promos;
+delete from public.production_logs;
+delete from public.recipes;
 delete from public.products;
 delete from public.categories;
 select tests.create_user('owner@t.test', 'owner') as owner_id \gset

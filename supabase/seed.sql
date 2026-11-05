@@ -188,3 +188,50 @@ begin
 end;
 $$;
 update public.app_settings set value = '"http://localhost:5173"' where key = 'toko.url_situs';
+
+-- =====================================================================
+-- FASE 4: 12 bahan baku, resep 6 produk, contoh produksi
+-- =====================================================================
+insert into public.ingredients (id, nama, satuan, stok, min_stock, cost_per_unit) values
+  ('d1000000-0000-4000-8000-000000000001', 'Tepung terigu', 'gram', 25000, 5000, 14),
+  ('d1000000-0000-4000-8000-000000000002', 'Gula pasir', 'gram', 12000, 3000, 16),
+  ('d1000000-0000-4000-8000-000000000003', 'Butter', 'gram', 6000, 2000, 120),
+  ('d1000000-0000-4000-8000-000000000004', 'Telur', 'butir', 120, 30, 2200),
+  ('d1000000-0000-4000-8000-000000000005', 'Susu cair', 'ml', 8000, 2000, 20),
+  ('d1000000-0000-4000-8000-000000000006', 'Cokelat batang', 'gram', 1500, 1000, 150),
+  ('d1000000-0000-4000-8000-000000000007', 'Daun pandan', 'lembar', 60, 20, 500),
+  ('d1000000-0000-4000-8000-000000000008', 'Selai nanas', 'gram', 2500, 1000, 60),
+  ('d1000000-0000-4000-8000-000000000009', 'Ragi instan', 'gram', 40, 50, 100),
+  ('d1000000-0000-4000-8000-000000000010', 'Garam', 'gram', 1000, 100, 5),
+  ('d1000000-0000-4000-8000-000000000011', 'Tepung maizena', 'gram', 3000, 500, 25),
+  ('d1000000-0000-4000-8000-000000000012', 'Vanili bubuk', 'gram', 0, 20, 300)
+on conflict (id) do nothing;
+
+do $$
+declare
+  r record;
+begin
+  if exists (select 1 from public.recipes) then return; end if;
+  for r in select * from (values
+    ('b1000000-0000-4000-8000-000000000001'::uuid, 70::numeric, '[{"i":"01","q":500},{"i":"03","q":400},{"i":"04","q":16},{"i":"05","q":1500},{"i":"02","q":350},{"i":"11","q":150},{"i":"10","q":5},{"i":"12","q":10}]'),
+    ('b1000000-0000-4000-8000-000000000002', 24, '[{"i":"01","q":1000},{"i":"03","q":600},{"i":"02","q":120},{"i":"09","q":15},{"i":"05","q":400},{"i":"10","q":20},{"i":"04","q":2}]'),
+    ('b1000000-0000-4000-8000-000000000003', 4, '[{"i":"01","q":1000},{"i":"02","q":150},{"i":"09","q":15},{"i":"05","q":500},{"i":"03","q":100},{"i":"04","q":3},{"i":"06","q":300},{"i":"10","q":10}]'),
+    ('b1000000-0000-4000-8000-000000000004', 2, '[{"i":"06","q":500},{"i":"03","q":300},{"i":"02","q":400},{"i":"04","q":8},{"i":"01","q":200}]'),
+    ('b1000000-0000-4000-8000-000000000005', 2, '[{"i":"01","q":300},{"i":"02","q":300},{"i":"04","q":10},{"i":"07","q":20},{"i":"05","q":200},{"i":"03","q":150},{"i":"11","q":50}]'),
+    ('b1000000-0000-4000-8000-000000000006', 4, '[{"i":"01","q":1000},{"i":"03","q":700},{"i":"02","q":150},{"i":"04","q":4},{"i":"08","q":800},{"i":"11","q":100},{"i":"12","q":5}]')
+  ) as t(product_id, yield, items) loop
+    insert into public.recipes (product_id, yield_per_batch) values (r.product_id, r.yield);
+    insert into public.recipe_items (recipe_id, ingredient_id, qty_per_batch)
+    select (select id from public.recipes where product_id = r.product_id),
+           ('d1000000-0000-4000-8000-0000000000' || (e ->> 'i'))::uuid, (e ->> 'q')::numeric
+    from jsonb_array_elements(r.items::jsonb) e;
+  end loop;
+
+  -- Contoh produksi hari ini oleh Admin Baking (memakai RPC asli).
+  perform set_config('request.jwt.claims',
+    json_build_object('sub', '00000000-0000-4000-a000-000000000003', 'role', 'authenticated')::text, true);
+  perform public.record_production('b1000000-0000-4000-8000-000000000001', 1);
+  perform public.record_production('b1000000-0000-4000-8000-000000000004', 1);
+  perform set_config('request.jwt.claims', '', true);
+end;
+$$;

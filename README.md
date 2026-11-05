@@ -3,7 +3,7 @@
 Website publik (etalase + pemesanan) dan dashboard internal toko kue GutVibes.
 React + TypeScript + Vite + Tailwind (PWA) · Supabase (Postgres, Auth, RLS, Edge Functions).
 
-**Status: Fase 3 — Notifikasi WhatsApp (selesai, menunggu uji).** Fase 1–2 sudah selesai.
+**Status: Fase 1–4 selesai.**
 
 ## Menjalankan secara lokal
 
@@ -76,6 +76,14 @@ npx supabase secrets set APP_URL=https://domain-anda WHATSAPP_PROVIDER=fonnte FO
 - `WHATSAPP_PROVIDER=dummy` hanya untuk lokal: tidak mengirim apa pun; nomor berakhiran `9999` disimulasikan gagal.
 - Token Fonnte hanya ada di secret Edge Function, tidak pernah di database atau frontend.
 - Template hanya boleh memakai variabel `{nama} {toko} {kode} {item} {total} {jadwal} {metode} {tautan_lacak} {kurir} {alasan}` (tanpa alamat/HP).
+
+## Catatan Fase 4 (Produksi)
+
+- `record_production` (atomik, row lock): bahan dikurangi sesuai resep × batch, stok produk jadi bertambah (ready stock), HPP produk dihitung dengan rata-rata bergerak, dan log produksi mencatat penginput.
+- Bila bahan kurang: mode **peringatan** (default) tetap menyimpan, stok bahan menjadi minus sebagai tanda untuk dikoreksi; mode **blokir** menolak. Mode diatur di Pengaturan.
+- Admin Baking hanya bisa input, melihat riwayat miliknya, dan melihat stok bahan. Resep & harga bahan tidak terlihat olehnya (hanya pratinjau pemakaian).
+- Pembatalan (Owner/Admin, wajib alasan) membalik stok bahan & produk. Pembatalan ditolak bila hasilnya sudah terjual (pakai koreksi stok).
+- Belanja bahan (jumlah + total harga) memperbarui harga rata-rata bahan.
 
 ## Tes
 

@@ -2,7 +2,9 @@ import { clsx } from 'clsx';
 import type { HTMLAttributes, ReactNode } from 'react';
 
 export function Card({ className, ...rest }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={clsx('rounded-2xl bg-white p-5 shadow-sm ring-1 ring-cream-200', className)} {...rest} />;
+  // Latar bawaan putih hanya bila pemanggil tidak memberi kelas bg-* sendiri.
+  const customBg = /(^|\s)bg-/.test(className ?? '');
+  return <div className={clsx('rounded-2xl p-5 shadow-sm ring-1 ring-cream-200', !customBg && 'bg-white', className)} {...rest} />;
 }
 
 export function PageHeader({ title, description, actions }: { title: string; description?: ReactNode; actions?: ReactNode }) {

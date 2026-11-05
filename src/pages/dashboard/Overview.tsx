@@ -68,7 +68,7 @@ function OperationalOverview() {
       const end = new Date(start.getTime() + 86_400_000);
       const count = (s: 'menunggu_konfirmasi' | 'dikonfirmasi' | 'siap') =>
         supabase.from('orders').select('id', { count: 'exact', head: true }).eq('status', s);
-      const [menunggu, dikonfirmasi, siap, hariIni, stok] = await Promise.all([
+      const [menunggu, dikonfirmasi, siap, hariIni, stok, bahan] = await Promise.all([
         count('menunggu_konfirmasi'),
         count('dikonfirmasi'),
         count('siap'),
@@ -80,10 +80,12 @@ function OperationalOverview() {
           .not('status', 'in', '(selesai,dibatalkan)')
           .order('jadwal'),
         supabase.from('products').select('id, nama, stok, satuan').eq('aktif', true).eq('sale_mode', 'ready_stock').lte('stok', 5).order('stok'),
+        supabase.from('ingredients').select('id, nama, stok, min_stock, satuan').eq('aktif', true),
       ]);
-      const err = menunggu.error ?? dikonfirmasi.error ?? siap.error ?? hariIni.error ?? stok.error;
+      const err = menunggu.error ?? dikonfirmasi.error ?? siap.error ?? hariIni.error ?? stok.error ?? bahan.error;
       if (err) throw err;
-      return { menunggu: menunggu.count ?? 0, dikonfirmasi: dikonfirmasi.count ?? 0, siap: siap.count ?? 0, hariIni: hariIni.data ?? [], stok: stok.data ?? [] };
+      const bahanMenipis = (bahan.data ?? []).filter((b) => Number(b.stok) <= Number(b.min_stock));
+      return { menunggu: menunggu.count ?? 0, dikonfirmasi: dikonfirmasi.count ?? 0, siap: siap.count ?? 0, hariIni: hariIni.data ?? [], stok: stok.data ?? [], bahanMenipis };
     },
   });
   if (q.isLoading) return <LoadingState />;
@@ -122,7 +124,7 @@ function OperationalOverview() {
         </Card>
         <Card>
           <h2 className="mb-3 flex items-center gap-2 font-sans text-lg font-bold">
-            <AlertTriangle className="size-5 text-amber-500" /> Stok produk menipis
+            <AlertTriangle className="size-5 text-amber-500" /> Stok menipis
           </h2>
           {d.stok.length === 0 ? (
             <p className="text-sm text-cocoa-500">Semua produk ready stock aman (stok di atas 5).</p>
@@ -136,6 +138,24 @@ function OperationalOverview() {
               ))}
             </ul>
           )}
+          <h3 className="mt-5 mb-2 font-sans font-bold">Bahan baku menipis</h3>
+          {d.bahanMenipis.length === 0 ? (
+            <p className="text-sm text-cocoa-500">Semua bahan di atas stok minimum.</p>
+          ) : (
+            <ul className="space-y-2 text-sm">
+              {d.bahanMenipis.map((b) => (
+                <li key={b.id} className="flex justify-between">
+                  <span>{b.nama}</span>
+                  <span className={Number(b.stok) <= 0 ? 'font-bold text-red-600' : 'font-semibold text-amber-700'}>
+                    {Number(b.stok) <= 0 ? 'Habis' : `${Number(b.stok).toLocaleString('id-ID')} ${b.satuan}`}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+          <Link to="/dashboard/stok-bahan" className="mt-3 inline-block text-sm font-semibold text-brand-600 hover:underline">
+            Stok bahan
+          </Link>
         </Card>
       </div>
     </div>

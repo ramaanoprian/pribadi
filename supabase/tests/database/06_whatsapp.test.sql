@@ -10,6 +10,8 @@ select tests.create_user('baking@t.test', 'admin_baking') as baking_id \gset
 
 delete from public.whatsapp_messages;
 delete from public.orders;
+delete from public.production_logs;
+delete from public.recipes;
 delete from public.products;
 update public.app_settings set value = '100' where key in ('batas.pesanan_per_jam', 'batas.lacak_per_15_menit');
 update public.app_settings set value = '500' where key = 'batas.pesanan_per_jam_ip';

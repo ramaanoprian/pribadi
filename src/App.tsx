@@ -35,6 +35,11 @@ const Customers = lazy(() => import('@/pages/dashboard/Customers').then((m) => (
 const CustomerDetail = lazy(() => import('@/pages/dashboard/Customers').then((m) => ({ default: m.CustomerDetail })));
 const WebContent = lazy(() => import('@/pages/dashboard/WebContent').then((m) => ({ default: m.WebContent })));
 const WhatsApp = lazy(() => import('@/pages/dashboard/WhatsApp').then((m) => ({ default: m.WhatsApp })));
+const ProductionInput = lazy(() => import('@/pages/dashboard/production/ProductionInput').then((m) => ({ default: m.ProductionInput })));
+const ProductionHistory = lazy(() => import('@/pages/dashboard/production/ProductionHistory').then((m) => ({ default: m.ProductionHistory })));
+const Ingredients = lazy(() => import('@/pages/dashboard/production/Ingredients').then((m) => ({ default: m.Ingredients })));
+const Recipes = lazy(() => import('@/pages/dashboard/production/Recipes').then((m) => ({ default: m.Recipes })));
+const FinishedStock = lazy(() => import('@/pages/dashboard/production/FinishedStock').then((m) => ({ default: m.FinishedStock })));
 const ComingSoon = lazy(() => import('@/pages/dashboard/ComingSoon').then((m) => ({ default: m.ComingSoon })));
 
 // Modul yang belum dibangun: tampil sesuai hak akses, berisi info fase.
@@ -81,6 +86,11 @@ export default function App() {
           <Route path="pelanggan" element={<RequireModule module="pelanggan"><Customers /></RequireModule>} />
           <Route path="pelanggan/:id" element={<RequireModule module="pelanggan"><CustomerDetail /></RequireModule>} />
           <Route path="konten" element={<RequireModule module="konten_web"><WebContent /></RequireModule>} />
+          <Route path="produksi" element={<RequireModule module="produksi"><ProductionInput /></RequireModule>} />
+          <Route path="produksi/riwayat" element={<RequireModule module="produksi"><ProductionHistory /></RequireModule>} />
+          <Route path="stok-bahan" element={<RequireModule module="stok_bahan"><Ingredients /></RequireModule>} />
+          <Route path="resep" element={<RequireModule module="resep"><Recipes /></RequireModule>} />
+          <Route path="stok-produk" element={<RequireModule module="stok_produk"><FinishedStock /></RequireModule>} />
           <Route path="whatsapp" element={<RequireModule module="whatsapp"><WhatsApp /></RequireModule>} />
           <Route path="log-aktivitas" element={<RequireModule module="log_aktivitas"><ActivityLog /></RequireModule>} />
           <Route path="pengaturan" element={<RequireModule module="pengaturan"><Settings /></RequireModule>} />

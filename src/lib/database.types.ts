@@ -162,6 +162,7 @@ export type Database = {
         Row: {
           id: number;
           product_id: string | null;
+          ingredient_id: string | null;
           qty: number;
           stok_sesudah: number;
           jenis: string;
@@ -316,6 +317,46 @@ export type Database = {
           { foreignKeyName: 'whatsapp_messages_order_id_fkey'; columns: ['order_id']; isOneToOne: false; referencedRelation: 'orders'; referencedColumns: ['id'] },
         ];
       };
+      ingredients: {
+        Row: { id: string; nama: string; satuan: string; stok: number; min_stock: number; aktif: boolean; created_at: string; updated_at: string };
+        Insert: { nama: string; satuan: string; min_stock?: number; aktif?: boolean };
+        Update: { nama?: string; satuan?: string; min_stock?: number; aktif?: boolean };
+        Relationships: [];
+      };
+      recipes: {
+        Row: { id: string; product_id: string; yield_per_batch: number; catatan: string | null; updated_at: string };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      recipe_items: {
+        Row: { id: string; recipe_id: string; ingredient_id: string; qty_per_batch: number };
+        Insert: never;
+        Update: never;
+        Relationships: [
+          { foreignKeyName: 'recipe_items_recipe_id_fkey'; columns: ['recipe_id']; isOneToOne: false; referencedRelation: 'recipes'; referencedColumns: ['id'] },
+          { foreignKeyName: 'recipe_items_ingredient_id_fkey'; columns: ['ingredient_id']; isOneToOne: false; referencedRelation: 'ingredients'; referencedColumns: ['id'] },
+        ];
+      };
+      production_logs: {
+        Row: {
+          id: string;
+          product_id: string;
+          nama_produk: string;
+          batches: number;
+          total_output: number;
+          bahan_kurang: boolean;
+          status: 'aktif' | 'dibatalkan';
+          created_by: string;
+          created_at: string;
+          cancelled_by: string | null;
+          cancelled_at: string | null;
+          alasan: string | null;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       audit_logs: {
         Row: {
           id: number;
@@ -359,6 +400,9 @@ export type Database = {
       konten_publik: { Row: { key: string; value: string }; Relationships: [] };
       pengaturan_publik: { Row: { key: string; value: Json }; Relationships: [] };
       biaya_produk: { Row: { id: string; cost_per_unit: number }; Relationships: [] };
+      biaya_bahan: { Row: { id: string; cost_per_unit: number }; Relationships: [] };
+      biaya_produksi: { Row: { id: string; hpp_snapshot: number; hpp_per_unit: number; bahan_snapshot: Json }; Relationships: [] };
+      nama_staf: { Row: { id: string; nama: string }; Relationships: [] };
     };
     Functions: {
       normalize_phone: { Args: { p_phone: string }; Returns: string | null };
@@ -392,6 +436,17 @@ export type Database = {
       my_effective_role: { Args: Record<string, never>; Returns: string | null };
       wa_resend: { Args: { p_id: string }; Returns: undefined };
       wa_enqueue_test: { Args: { p_to: string; p_pesan?: string | null }; Returns: string };
+      production_products: {
+        Args: Record<string, never>;
+        Returns: { product_id: string; nama: string; satuan: string; sale_mode: SaleMode; stok: number; yield_per_batch: number; gambar_path: string | null }[];
+      };
+      production_preview: { Args: { p_product_id: string; p_batches: number }; Returns: Json };
+      record_production: { Args: { p_product_id: string; p_batches: number }; Returns: Json };
+      cancel_production: { Args: { p_id: string; p_alasan: string }; Returns: undefined };
+      production_today: { Args: Record<string, never>; Returns: { product_id: string; nama_produk: string; satuan: string; batches: number; hasil: number }[] };
+      add_ingredient_stock: { Args: { p_ingredient_id: string; p_qty: number; p_total_harga: number; p_catatan?: string | null }; Returns: number };
+      adjust_ingredient_stock: { Args: { p_ingredient_id: string; p_delta: number; p_alasan: string }; Returns: number };
+      save_recipe: { Args: { p_product_id: string; p_yield: number; p_items: Json; p_catatan?: string | null }; Returns: string };
       adjust_product_stock: { Args: { p_product_id: string; p_delta: number; p_alasan: string }; Returns: number };
     };
     Enums: { app_role: AppRole; sale_mode: SaleMode; order_status: OrderStatus; fulfillment: Fulfillment; payment_status: PaymentStatus };
