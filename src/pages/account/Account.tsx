@@ -5,9 +5,11 @@ import { OrderHistory } from '@/components/account/OrderHistory';
 import { LoyaltyCard } from '@/components/account/LoyaltyCard';
 import { ChangePasswordCard, ProfileCard } from '@/components/account/ProfileCard';
 import { Button } from '@/components/ui/Button';
+import { useSeo } from '@/hooks/useSeo';
 
 export function Account() {
   const { profile, signOut } = useAuth();
+  useSeo({ title: 'Akun Saya', noindex: true });
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:py-12">
       <div className="mb-6 flex items-end justify-between gap-3">

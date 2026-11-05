@@ -11,10 +11,13 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icons/favicon-64.png', 'icons/apple-touch-icon.png', 'brand/*.png'],
+      includeAssets: ['icons/favicon-64.png', 'icons/apple-touch-icon.png', 'brand/*.png', 'robots.txt'],
       manifest: {
+        id: '/',
         name: 'GutVibes Bakehouse',
         short_name: 'GutVibes',
+        categories: ['food', 'shopping', 'business'],
+        orientation: 'portrait-primary',
         description: 'Pesan kue & roti GutVibes, serta dashboard operasional toko.',
         lang: 'id',
         theme_color: '#F25A0E',
@@ -30,7 +33,12 @@ export default defineConfig({
       workbox: {
         navigateFallback: '/index.html',
         // Data Supabase tidak di-cache: selalu ambil yang terbaru.
-        navigateFallbackDenylist: [/^\/functions\//, /^\/rest\//, /^\/auth\//],
+        navigateFallbackDenylist: [/^\/functions\//, /^\/rest\//, /^\/auth\//, /^\/sitemap\.xml$/, /^\/robots\.txt$/],
+        // Aset statis di-cache; data Supabase selalu dari jaringan.
+        globPatterns: ['**/*.{js,css,html,png,svg,webp,jpg,woff2}'],
+        // Pustaka ekspor (PDF/Excel) hanya diunduh saat dipakai, tidak ikut dipasang offline.
+        globIgnores: ['**/jspdf*', '**/html2canvas*', '**/purify.es*', '**/index.es-*', '**/browser-*'],
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
       },
     }),
   ],

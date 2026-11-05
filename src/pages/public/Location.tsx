@@ -3,9 +3,11 @@ import { useContent } from '@/hooks/usePublic';
 import { formatPhone, normalizePhone } from '@/lib/phone';
 import { Card } from '@/components/ui/Card';
 import { LoadingState } from '@/components/ui/States';
+import { useSeo } from '@/hooks/useSeo';
 
 export function Location() {
   const { c, isLoading } = useContent();
+  useSeo({ title: 'Lokasi & Kontak', description: `${c('lokasi.alamat')} ${c('lokasi.jam_buka')}`.trim() || undefined });
   const wa = normalizePhone(c('kontak.whatsapp'));
   const maps = c('lokasi.maps_url');
   const ig = c('kontak.instagram');

@@ -9,10 +9,12 @@ import { Input } from '@/components/ui/Field';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Card';
 import { AuthCard } from './AuthCard';
+import { useSeo } from '@/hooks/useSeo';
 
 type Errors = Partial<Record<'nama' | 'email' | 'no_hp' | 'password' | 'konfirmasi', string>>;
 
 export function Register() {
+  useSeo({ title: 'Daftar member', description: 'Daftar member GutVibes: simpan alamat, pesan ulang cepat, dan kumpulkan stamp untuk hadiah.' });
   const [params] = useSearchParams();
   // Prefill dari ajakan daftar setelah checkout tamu.
   const [form, setForm] = useState({ nama: params.get('nama') ?? '', email: '', no_hp: params.get('hp') ?? '', password: '', konfirmasi: '' });

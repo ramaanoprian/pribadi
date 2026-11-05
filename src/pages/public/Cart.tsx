@@ -7,15 +7,18 @@ import { ProductImage } from '@/components/product/ProductImage';
 import { QtyStepper } from '@/components/product/QtyStepper';
 import { Card, Alert } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/States';
+import { useSeo } from '@/hooks/useSeo';
 
 export function Cart() {
   const cart = useCart();
   const catalog = useCatalog();
+  useSeo({ title: 'Keranjang', noindex: true });
   const live = new Map((catalog.data?.products ?? []).map((p) => [p.id, p]));
 
   if (cart.items.length === 0)
     return (
       <div className="mx-auto max-w-3xl px-4 py-12">
+        <h1 className="mb-6 text-3xl font-bold">Keranjang</h1>
         <EmptyState
           icon={<ShoppingBag className="size-8" />}
           title="Keranjang masih kosong"

@@ -17,6 +17,7 @@ import type { Fulfillment } from '@/lib/database.types';
 import { Alert, Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input, Select, Textarea } from '@/components/ui/Field';
+import { useSeo } from '@/hooks/useSeo';
 
 type Promo = { kode: string; nama: string; diskon: number } | null;
 
@@ -34,6 +35,7 @@ export function Checkout() {
   const { c } = useContent();
   const { freeShippingMin } = usePublicSettings();
   const isMember = profile?.role === 'member';
+  useSeo({ title: 'Checkout', noindex: true });
 
   const [guest, setGuest] = useState(false);
   const [form, setForm] = useState({ nama: '', no_hp: '', fulfillment: 'ambil' as Fulfillment, jadwal: defaultSchedule(), alamat: '', catatan: '' });

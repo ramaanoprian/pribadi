@@ -7,6 +7,7 @@ import { ToastProvider } from '@/components/ui/Toast';
 import { CartProvider } from '@/lib/cart';
 import { supabaseConfigured } from '@/lib/supabase';
 import App from './App';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import './index.css';
 
 const queryClient = new QueryClient({
@@ -29,6 +30,7 @@ function MissingConfig() {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
+    <ErrorBoundary>
     {supabaseConfigured ? (
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
@@ -44,5 +46,6 @@ createRoot(document.getElementById('root')!).render(
     ) : (
       <MissingConfig />
     )}
+    </ErrorBoundary>
   </StrictMode>,
 );

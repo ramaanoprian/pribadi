@@ -9,6 +9,7 @@ import { formatDateTime, formatRupiah } from '@/lib/format';
 import { formatPhone, normalizePhone } from '@/lib/phone';
 import { FULFILLMENT_LABEL, PAYMENT_LABEL, waLink, type PublicOrder } from '@/lib/orders';
 import { useContent } from '@/hooks/usePublic';
+import { useSeo } from '@/hooks/useSeo';
 import { OrderSummary, OrderTimeline, StatusBadge } from '@/components/order/OrderParts';
 import { Alert, Badge, Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -152,6 +153,7 @@ export function OrderView({ order, isNew }: { order: PublicOrder; isNew?: boolea
 
 /** /lacak/:token — dari tautan rahasia (juga halaman sukses checkout). */
 export function TrackByToken() {
+  useSeo({ title: 'Status pesanan', noindex: true });
   const { token } = useParams();
   const [params] = useSearchParams();
   const q = useQuery({
@@ -183,6 +185,7 @@ export function TrackByToken() {
 
 /** /lacak — kode pesanan + nomor HP, tanpa login. */
 export function Track() {
+  useSeo({ title: 'Lacak Pesanan', description: 'Lacak status pesanan GutVibes dengan kode pesanan dan nomor WhatsApp.' });
   const [kode, setKode] = useState('');
   const [hp, setHp] = useState('');
   const [busy, setBusy] = useState(false);

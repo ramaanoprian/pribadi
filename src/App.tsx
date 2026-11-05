@@ -3,7 +3,6 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { PublicLayout } from '@/layouts/PublicLayout';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
 import { GuestOnly, RequireAuth, RequireMember, RequireModule, RequireStaff } from '@/auth/guards';
-import { CURRENT_PHASE, NAV_ITEMS } from '@/lib/permissions';
 import { Home } from '@/pages/public/Home';
 import { NotFound } from '@/pages/public/NotFound';
 import { Login } from '@/pages/auth/Login';
@@ -44,10 +43,7 @@ const Loyalty = lazy(() => import('@/pages/dashboard/loyalty/Loyalty').then((m) 
 const Expenses = lazy(() => import('@/pages/dashboard/finance/Expenses').then((m) => ({ default: m.Expenses })));
 const Report = lazy(() => import('@/pages/dashboard/finance/Report').then((m) => ({ default: m.Report })));
 const CustomerAnalytics = lazy(() => import('@/pages/dashboard/finance/CustomerAnalytics').then((m) => ({ default: m.CustomerAnalytics })));
-const ComingSoon = lazy(() => import('@/pages/dashboard/ComingSoon').then((m) => ({ default: m.ComingSoon })));
 
-// Modul yang belum dibangun: tampil sesuai hak akses, berisi info fase.
-const upcoming = NAV_ITEMS.filter((i) => i.phase > CURRENT_PHASE);
 
 export default function App() {
   return (
@@ -102,17 +98,6 @@ export default function App() {
           <Route path="whatsapp" element={<RequireModule module="whatsapp"><WhatsApp /></RequireModule>} />
           <Route path="log-aktivitas" element={<RequireModule module="log_aktivitas"><ActivityLog /></RequireModule>} />
           <Route path="pengaturan" element={<RequireModule module="pengaturan"><Settings /></RequireModule>} />
-          {upcoming.map((item) => (
-            <Route
-              key={item.path}
-              path={item.path.replace('/dashboard/', '')}
-              element={
-                <RequireModule module={item.module}>
-                  <ComingSoon title={item.label} phase={item.phase} />
-                </RequireModule>
-              }
-            />
-          ))}
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Route>
       </Route>

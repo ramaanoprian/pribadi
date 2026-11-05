@@ -4,10 +4,12 @@ import { useAuth } from '@/auth/AuthProvider';
 import { useCatalog, useContent } from '@/hooks/usePublic';
 import { ProductCard } from '@/components/product/ProductCard';
 import { LoadingState } from '@/components/ui/States';
+import { useSeo } from '@/hooks/useSeo';
 
 export function Home() {
   const { session } = useAuth();
   const { c } = useContent();
+  useSeo({ description: c('beranda.hero_sub') });
   const catalog = useCatalog();
   const title = c('beranda.hero_judul', 'Kue & roti rumahan dengan good vibes.');
   const featured = catalog.data?.products.slice(0, 4) ?? [];

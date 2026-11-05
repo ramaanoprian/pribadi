@@ -3,7 +3,7 @@
 Website publik (etalase + pemesanan) dan dashboard internal toko kue GutVibes.
 React + TypeScript + Vite + Tailwind (PWA) · Supabase (Postgres, Auth, RLS, Edge Functions).
 
-**Status: Fase 1–7 selesai.**
+**Status: Fase 1–8 selesai** (fondasi, katalog & pesanan, WhatsApp, produksi, loyalti, biaya & laporan, analisis pelanggan, poles).
 
 ## Menjalankan secara lokal
 
@@ -34,6 +34,10 @@ Email (undangan staf, konfirmasi daftar, lupa kata sandi) di lokal masuk ke Mail
 Data contoh juga berisi 4 kategori, 6 produk (Soes Vla 1 batch = 70 pcs, ready stock & pre-order), promo `MANIS10`, konten web, dan 30 pesanan campuran tamu & member.
 
 Owner pertama kali masuk akan diminta memindai kode QR dengan aplikasi authenticator (Google Authenticator, Authy, dll.).
+
+### Hosting frontend
+
+Build statis (`npm run build` → `dist/`). Sudah ada aturan rewrite SPA untuk Vercel (`vercel.json`) dan Netlify (`public/_redirects`). Isi env `VITE_SUPABASE_URL` dan `VITE_SUPABASE_ANON_KEY` di layanan hosting. Ganti domain contoh `gutvibes.id` di `public/robots.txt` dan `public/sitemap.xml`.
 
 ### Supabase hosted (produksi)
 
@@ -107,6 +111,13 @@ npx supabase secrets set APP_URL=https://domain-anda WHATSAPP_PROVIDER=fonnte FO
 - `customer_ranking` menyediakan filter periode, jenis (member/tamu), status (repeat/VIP/baru/tidur), pencarian, dan urutan (jumlah pesanan atau total belanja). `customer_analytics_summary` menghitung pelanggan aktif, baru vs kembali, tingkat repeat, rata-rata pesanan, tidur, dan VIP.
 - "Ajak kembali" membuka WhatsApp dengan pesan personal untuk dikirim manual satu per satu, bukan pesan massal.
 
+## Catatan Fase 8 (Poles)
+
+- SEO dasar: judul & deskripsi per halaman, Open Graph + gambar `og-image.jpg`, canonical, `robots.txt`, `sitemap.xml`. Dashboard/akun/checkout diberi `noindex`.
+- PWA: manifest (standalone, ikon maskable), service worker dengan cache aset statis (pustaka ekspor PDF/Excel tidak ikut di-cache). Data Supabase selalu diambil dari jaringan.
+- Error boundary global (termasuk pesan "versi baru tersedia" setelah deploy), tautan "Langsung ke konten", dan anak grid boleh menyusut agar tidak ada scroll horizontal di HP.
+- `npm run test:ui` membuka semua halaman tiap peran di lebar 360px & 1366px, lalu memeriksa galat konsol, scroll horizontal, judul halaman, dan halaman terlarang.
+
 ## Tes
 
 ```bash
@@ -115,7 +126,7 @@ npm run test:db        # pgTAP di PostgreSQL lokal tanpa Docker (pakai shim Supa
 npx supabase test db   # pgTAP di Supabase lokal (Docker)
 deno test supabase/functions/_shared/whatsapp/   # unit test penyedia WhatsApp (Deno)
 npm run test:e2e       # E2E API ke Supabase lokal; butuh SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
-                       # (opsional INVITE_FN_URL bila Edge Function dijalankan di luar `supabase start`)
+npm run test:ui        # uji asap UI per peran (HP 360px & desktop); butuh app berjalan + Playwright + SUPABASE_SERVICE_ROLE_KEY
 ```
 
 ## Struktur
@@ -128,6 +139,11 @@ supabase/seed.sql      data contoh lokal
 src/lib/permissions.ts matriks hak akses (UI); penegakan sebenarnya di RLS
 src/auth/              sesi, profil, 2FA, penjaga rute
 src/pages/             halaman publik, akun member, dashboard
+src/components/charts/ grafik SVG ringan (warna tervalidasi buta warna)
+src/lib/export.ts      ekspor Excel/PDF (lazy-load + log aktivitas)
+tests/e2e/             E2E API per fase (Vitest)
+tests/ui/smoke.mjs     uji asap UI per peran (Playwright)
+scripts/test-db.sh     pgTAP tanpa Docker (shim Supabase di scripts/db)
 ```
 
 ## Keamanan (ringkas)

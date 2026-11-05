@@ -6,8 +6,10 @@ import { Input } from '@/components/ui/Field';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Card';
 import { AuthCard } from './AuthCard';
+import { useSeo } from '@/hooks/useSeo';
 
 export function Login() {
+  useSeo({ title: 'Masuk', noindex: true });
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);

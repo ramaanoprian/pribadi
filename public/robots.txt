@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /akun
+Disallow: /checkout
+Disallow: /keranjang
+Disallow: /lacak/
+Disallow: /atur-kata-sandi
+
+# Ganti domain di bawah setelah website online.
+Sitemap: https://gutvibes.id/sitemap.xml

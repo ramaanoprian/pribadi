@@ -1,8 +1,10 @@
 import { useContent } from '@/hooks/usePublic';
 import { LoadingState } from '@/components/ui/States';
+import { useSeo } from '@/hooks/useSeo';
 
 export function Story() {
   const { c, isLoading } = useContent();
+  useSeo({ title: c('cerita.judul', 'Cerita Kami'), description: c('cerita.isi') });
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 sm:py-16">
       <img src="/brand/symbol.png" alt="" className="size-14" />

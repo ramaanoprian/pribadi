@@ -125,7 +125,7 @@ export function Report() {
         <ErrorState message={errorMessage(q.error)} onRetry={() => void q.refetch()} />
       ) : r ? (
         <div className="grid gap-5 lg:grid-cols-[1fr_1.3fr]">
-          <Card>
+          <Card className="min-w-0">
             <h2 className="font-sans text-lg font-bold">Laba rugi</h2>
             <p className="text-sm text-cocoa-500">
               {periodeText} · {r.jumlah_pesanan} pesanan selesai
@@ -154,7 +154,7 @@ export function Report() {
               </p>
             )}
           </Card>
-          <Card>
+          <Card className="min-w-0">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="font-sans text-lg font-bold">HPP & margin per produk</h2>
               <div className="flex gap-2">

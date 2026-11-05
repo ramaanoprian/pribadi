@@ -7,6 +7,8 @@ import { CURRENT_PHASE, navFor, ROLE_LABEL, type NavItem } from '@/lib/permissio
 import { NAV_ICONS } from '@/components/icons';
 import { Logo } from '@/components/Logo';
 import { LoadingState } from '@/components/ui/States';
+import { useSeo } from '@/hooks/useSeo';
+import { NAV_ITEMS } from '@/lib/permissions';
 
 function groupItems(items: NavItem[]) {
   const groups: { name: string; items: NavItem[] }[] = [];
@@ -101,9 +103,14 @@ export function DashboardLayout() {
   const [open, setOpen] = useState(false);
   const location = useLocation();
   useEffect(() => setOpen(false), [location.pathname]);
+  const current = [...NAV_ITEMS].sort((a, b) => b.path.length - a.path.length).find((i) => location.pathname.startsWith(i.path));
+  useSeo({ title: current ? `${current.label} — Dashboard` : 'Dashboard', noindex: true });
 
   return (
     <div className="min-h-dvh bg-cream-100 lg:pl-64">
+      <a href="#konten" className="sr-only z-50 rounded-lg bg-white px-3 py-2 font-semibold focus:not-sr-only focus:fixed focus:top-2 focus:left-2">
+        Langsung ke konten
+      </a>
       {/* Sidebar desktop */}
       <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-cream-200 bg-cream-50 lg:block">
         <SidebarContent />
@@ -130,7 +137,7 @@ export function DashboardLayout() {
         </div>
       )}
 
-      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:py-8">
+      <main id="konten" className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:py-8">
         <Suspense fallback={<LoadingState />}>
           <Outlet />
         </Suspense>

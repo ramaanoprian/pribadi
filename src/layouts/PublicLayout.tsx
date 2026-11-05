@@ -48,6 +48,9 @@ export function PublicLayout() {
 
   return (
     <div className="flex min-h-dvh flex-col">
+      <a href="#konten" className="sr-only z-50 rounded-lg bg-white px-3 py-2 font-semibold focus:not-sr-only focus:fixed focus:top-2 focus:left-2">
+        Langsung ke konten
+      </a>
       <header className="sticky top-0 z-30 border-b border-cream-200 bg-cream-100/90 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4">
           <Link to="/" aria-label={`${storeName} — Beranda`}>
@@ -84,7 +87,7 @@ export function PublicLayout() {
         )}
       </header>
 
-      <main className="flex-1">
+      <main id="konten" className="flex-1">
         <Outlet />
       </main>
 

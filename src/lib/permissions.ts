@@ -62,7 +62,7 @@ export function canEdit(role: AppRole | null | undefined, module: ModuleKey): bo
 }
 
 /** Fase pembangunan yang sudah selesai; modul dengan fase lebih besar tampil sebagai "segera hadir". */
-export const CURRENT_PHASE = 7;
+export const CURRENT_PHASE = 8;
 
 /** Item menu dashboard. `phase` = fase pembangunan modul tersebut. */
 export type NavItem = {

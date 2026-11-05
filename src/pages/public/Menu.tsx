@@ -4,11 +4,13 @@ import { useCatalog } from '@/hooks/usePublic';
 import { errorMessage } from '@/lib/errors';
 import { ProductCard } from '@/components/product/ProductCard';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/States';
+import { useSeo } from '@/hooks/useSeo';
 
 export function Menu() {
   const [params, setParams] = useSearchParams();
   const active = params.get('kategori') ?? '';
   const q = useCatalog();
+  useSeo({ title: 'Menu', description: 'Daftar kue, roti, pastry & kue kering GutVibes — ready stock dan pre-order.' });
 
   const products = (q.data?.products ?? []).filter((p) => !active || p.kategori_slug === active);
   const chip = (on: boolean) =>

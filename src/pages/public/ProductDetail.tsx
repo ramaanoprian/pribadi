@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, CalendarClock, ShoppingBag } from 'lucide-react';
 import { useCatalog } from '@/hooks/usePublic';
+import { useSeo } from '@/hooks/useSeo';
 import { useCart } from '@/lib/cart';
 import { formatRupiah } from '@/lib/format';
 import { errorMessage } from '@/lib/errors';
@@ -20,6 +21,8 @@ export function ProductDetail() {
   const toast = useToast();
   const navigate = useNavigate();
   const [qty, setQty] = useState(1);
+  const found = q.data?.products.find((x) => x.slug === slug);
+  useSeo({ title: found?.nama ?? 'Produk', description: found ? `${found.deskripsi} — Rp${found.harga.toLocaleString('id-ID')}/${found.satuan}` : undefined });
 
   if (q.isLoading) return <div className="mx-auto max-w-5xl px-4 py-10"><LoadingState /></div>;
   if (q.isError) return <div className="mx-auto max-w-5xl px-4 py-10"><ErrorState message={errorMessage(q.error)} onRetry={() => void q.refetch()} /></div>;
