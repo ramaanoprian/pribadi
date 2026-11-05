@@ -3,7 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { PublicLayout } from '@/layouts/PublicLayout';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
 import { GuestOnly, RequireAuth, RequireMember, RequireModule, RequireStaff } from '@/auth/guards';
-import { NAV_ITEMS } from '@/lib/permissions';
+import { CURRENT_PHASE, NAV_ITEMS } from '@/lib/permissions';
 import { Home } from '@/pages/public/Home';
 import { NotFound } from '@/pages/public/NotFound';
 import { Login } from '@/pages/auth/Login';
@@ -11,6 +11,13 @@ import { Register } from '@/pages/auth/Register';
 import { ForgotPassword } from '@/pages/auth/ForgotPassword';
 import { SetPassword } from '@/pages/auth/SetPassword';
 import { Account } from '@/pages/account/Account';
+import { Menu } from '@/pages/public/Menu';
+import { ProductDetail } from '@/pages/public/ProductDetail';
+import { Cart } from '@/pages/public/Cart';
+import { Checkout } from '@/pages/public/Checkout';
+import { Track, TrackByToken } from '@/pages/public/Track';
+import { Story } from '@/pages/public/Story';
+import { Location } from '@/pages/public/Location';
 import { FullPageLoading } from '@/components/ui/States';
 
 // Halaman staf dimuat terpisah agar pengunjung website tidak mengunduhnya.
@@ -20,16 +27,31 @@ const Accounts = lazy(() => import('@/pages/dashboard/Accounts').then((m) => ({ 
 const ActivityLog = lazy(() => import('@/pages/dashboard/ActivityLog').then((m) => ({ default: m.ActivityLog })));
 const Settings = lazy(() => import('@/pages/dashboard/Settings').then((m) => ({ default: m.Settings })));
 const MyProfile = lazy(() => import('@/pages/dashboard/MyProfile').then((m) => ({ default: m.MyProfile })));
+const Orders = lazy(() => import('@/pages/dashboard/orders/Orders').then((m) => ({ default: m.Orders })));
+const OrderDetail = lazy(() => import('@/pages/dashboard/orders/OrderDetail').then((m) => ({ default: m.OrderDetail })));
+const Catalog = lazy(() => import('@/pages/dashboard/Catalog').then((m) => ({ default: m.Catalog })));
+const Promos = lazy(() => import('@/pages/dashboard/Promos').then((m) => ({ default: m.Promos })));
+const Customers = lazy(() => import('@/pages/dashboard/Customers').then((m) => ({ default: m.Customers })));
+const CustomerDetail = lazy(() => import('@/pages/dashboard/Customers').then((m) => ({ default: m.CustomerDetail })));
+const WebContent = lazy(() => import('@/pages/dashboard/WebContent').then((m) => ({ default: m.WebContent })));
 const ComingSoon = lazy(() => import('@/pages/dashboard/ComingSoon').then((m) => ({ default: m.ComingSoon })));
 
 // Modul yang belum dibangun: tampil sesuai hak akses, berisi info fase.
-const upcoming = NAV_ITEMS.filter((i) => i.phase > 1);
+const upcoming = NAV_ITEMS.filter((i) => i.phase > CURRENT_PHASE);
 
 export default function App() {
   return (
     <Routes>
       <Route element={<PublicLayout />}>
         <Route index element={<Home />} />
+        <Route path="menu" element={<Menu />} />
+        <Route path="menu/:slug" element={<ProductDetail />} />
+        <Route path="keranjang" element={<Cart />} />
+        <Route path="checkout" element={<Checkout />} />
+        <Route path="lacak" element={<Track />} />
+        <Route path="lacak/:token" element={<TrackByToken />} />
+        <Route path="cerita" element={<Story />} />
+        <Route path="lokasi" element={<Location />} />
         <Route element={<GuestOnly />}>
           <Route path="masuk" element={<Login />} />
           <Route path="daftar" element={<Register />} />
@@ -51,6 +73,13 @@ export default function App() {
           <Route index element={<Overview />} />
           <Route path="profil" element={<MyProfile />} />
           <Route path="akun" element={<RequireModule module="akun"><Accounts /></RequireModule>} />
+          <Route path="pesanan" element={<RequireModule module="pesanan"><Orders /></RequireModule>} />
+          <Route path="pesanan/:id" element={<RequireModule module="pesanan"><OrderDetail /></RequireModule>} />
+          <Route path="katalog" element={<RequireModule module="katalog"><Catalog /></RequireModule>} />
+          <Route path="promo" element={<RequireModule module="harga_promo"><Promos /></RequireModule>} />
+          <Route path="pelanggan" element={<RequireModule module="pelanggan"><Customers /></RequireModule>} />
+          <Route path="pelanggan/:id" element={<RequireModule module="pelanggan"><CustomerDetail /></RequireModule>} />
+          <Route path="konten" element={<RequireModule module="konten_web"><WebContent /></RequireModule>} />
           <Route path="log-aktivitas" element={<RequireModule module="log_aktivitas"><ActivityLog /></RequireModule>} />
           <Route path="pengaturan" element={<RequireModule module="pengaturan"><Settings /></RequireModule>} />
           {upcoming.map((item) => (

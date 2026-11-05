@@ -4,6 +4,10 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type AppRole = 'owner' | 'admin' | 'admin_baking' | 'member';
+export type SaleMode = 'ready_stock' | 'preorder';
+export type OrderStatus = 'menunggu_konfirmasi' | 'dikonfirmasi' | 'siap' | 'selesai' | 'dibatalkan';
+export type Fulfillment = 'ambil' | 'antar';
+export type PaymentStatus = 'belum_bayar' | 'lunas';
 
 export type Database = {
   public: {
@@ -104,6 +108,179 @@ export type Database = {
         Update: { value?: Json };
         Relationships: [];
       };
+      categories: {
+        Row: { id: string; nama: string; slug: string; urutan: number; aktif: boolean; created_at: string; updated_at: string };
+        Insert: { nama: string; slug: string; urutan?: number; aktif?: boolean };
+        Update: { nama?: string; slug?: string; urutan?: number; aktif?: boolean };
+        Relationships: [];
+      };
+      products: {
+        Row: {
+          id: string;
+          category_id: string | null;
+          nama: string;
+          slug: string;
+          deskripsi: string;
+          harga: number;
+          satuan: string;
+          sale_mode: SaleMode;
+          stok: number;
+          gambar_path: string | null;
+          aktif: boolean;
+          urutan: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          category_id?: string | null;
+          nama: string;
+          slug: string;
+          deskripsi?: string;
+          harga: number;
+          satuan?: string;
+          sale_mode?: SaleMode;
+          gambar_path?: string | null;
+          aktif?: boolean;
+          urutan?: number;
+        };
+        Update: {
+          category_id?: string | null;
+          nama?: string;
+          slug?: string;
+          deskripsi?: string;
+          harga?: number;
+          satuan?: string;
+          sale_mode?: SaleMode;
+          gambar_path?: string | null;
+          aktif?: boolean;
+          urutan?: number;
+        };
+        Relationships: [];
+      };
+      stock_movements: {
+        Row: {
+          id: number;
+          product_id: string | null;
+          qty: number;
+          stok_sesudah: number;
+          jenis: string;
+          ref_tabel: string | null;
+          ref_id: string | null;
+          alasan: string | null;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      promos: {
+        Row: {
+          id: string;
+          kode: string;
+          nama: string;
+          tipe: 'persen' | 'nominal';
+          nilai: number;
+          min_belanja: number;
+          maks_diskon: number | null;
+          mulai: string | null;
+          selesai: string | null;
+          kuota: number | null;
+          aktif: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          kode: string;
+          nama: string;
+          tipe: 'persen' | 'nominal';
+          nilai: number;
+          min_belanja?: number;
+          maks_diskon?: number | null;
+          mulai?: string | null;
+          selesai?: string | null;
+          kuota?: number | null;
+          aktif?: boolean;
+        };
+        Update: Partial<Database['public']['Tables']['promos']['Insert']>;
+        Relationships: [];
+      };
+      orders: {
+        Row: {
+          id: string;
+          kode: string;
+          tracking_code: string;
+          customer_id: string;
+          user_id: string | null;
+          nama_pemesan: string;
+          no_hp: string;
+          status: OrderStatus;
+          fulfillment: Fulfillment;
+          jadwal: string;
+          alamat_antar: string | null;
+          catatan: string | null;
+          subtotal: number;
+          diskon: number;
+          promo_id: string | null;
+          promo_kode: string | null;
+          shipping_cost: number;
+          ongkir_diset: boolean;
+          gratis_ongkir: boolean;
+          courier_name: string | null;
+          total: number;
+          payment_status: PaymentStatus;
+          bukti_transfer_path: string | null;
+          persetujuan_wa: boolean;
+          stok_dipotong: boolean;
+          confirmed_at: string | null;
+          confirmed_by: string | null;
+          ready_at: string | null;
+          completed_at: string | null;
+          cancelled_at: string | null;
+          cancelled_by: string | null;
+          alasan_batal: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [
+          { foreignKeyName: 'orders_customer_id_fkey'; columns: ['customer_id']; isOneToOne: false; referencedRelation: 'customers'; referencedColumns: ['id'] },
+        ];
+      };
+      order_items: {
+        Row: {
+          id: string;
+          order_id: string;
+          product_id: string | null;
+          nama_produk: string;
+          satuan: string;
+          sale_mode: SaleMode;
+          harga: number;
+          qty: number;
+          subtotal: number;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [
+          { foreignKeyName: 'order_items_order_id_fkey'; columns: ['order_id']; isOneToOne: false; referencedRelation: 'orders'; referencedColumns: ['id'] },
+        ];
+      };
+      site_content: {
+        Row: {
+          key: string;
+          label: string;
+          tipe: 'teks' | 'paragraf' | 'url';
+          value: string;
+          grup: string;
+          urutan: number;
+          updated_by: string | null;
+          updated_at: string;
+        };
+        Insert: never;
+        Update: { value?: string };
+        Relationships: [];
+      };
       audit_logs: {
         Row: {
           id: number;
@@ -124,7 +301,30 @@ export type Database = {
         Relationships: [];
       };
     };
-    Views: { [_ in never]: never };
+    Views: {
+      katalog_kategori: { Row: { id: string; nama: string; slug: string; urutan: number }; Relationships: [] };
+      katalog_produk: {
+        Row: {
+          id: string;
+          nama: string;
+          slug: string;
+          deskripsi: string;
+          harga: number;
+          satuan: string;
+          sale_mode: SaleMode;
+          stok: number | null;
+          gambar_path: string | null;
+          urutan: number;
+          category_id: string | null;
+          kategori_nama: string | null;
+          kategori_slug: string | null;
+        };
+        Relationships: [];
+      };
+      konten_publik: { Row: { key: string; value: string }; Relationships: [] };
+      pengaturan_publik: { Row: { key: string; value: Json }; Relationships: [] };
+      biaya_produk: { Row: { id: string; cost_per_unit: number }; Relationships: [] };
+    };
     Functions: {
       normalize_phone: { Args: { p_phone: string }; Returns: string | null };
       create_staff_invitation: { Args: { p_email: string; p_role: AppRole; p_nama?: string }; Returns: string };
@@ -132,11 +332,35 @@ export type Database = {
       set_user_role: { Args: { p_user_id: string; p_role: AppRole; p_alasan?: string }; Returns: undefined };
       set_user_active: { Args: { p_user_id: string; p_aktif: boolean; p_alasan?: string }; Returns: undefined };
       log_activity: { Args: { p_aksi: string; p_entitas: string; p_meta?: Json }; Returns: undefined };
+      check_promo: { Args: { p_kode: string; p_subtotal: number }; Returns: Json };
+      create_order: {
+        Args: {
+          p_nama: string;
+          p_no_hp: string;
+          p_fulfillment: Fulfillment;
+          p_jadwal: string;
+          p_items: Json;
+          p_alamat?: string | null;
+          p_catatan?: string | null;
+          p_kode_promo?: string | null;
+          p_persetujuan_wa?: boolean;
+        };
+        Returns: Json;
+      };
+      track_order: { Args: { p_kode: string; p_no_hp: string }; Returns: Json };
+      track_order_by_token: { Args: { p_token: string }; Returns: Json };
+      set_order_shipping: { Args: { p_id: string; p_ongkir?: number | null; p_kurir?: string | null }; Returns: undefined };
+      confirm_order_payment: { Args: { p_id: string; p_bukti_path?: string | null }; Returns: undefined };
+      mark_order_ready: { Args: { p_id: string }; Returns: undefined };
+      complete_order: { Args: { p_id: string }; Returns: undefined };
+      cancel_order: { Args: { p_id: string; p_alasan: string }; Returns: undefined };
+      adjust_product_stock: { Args: { p_product_id: string; p_delta: number; p_alasan: string }; Returns: number };
     };
-    Enums: { app_role: AppRole };
+    Enums: { app_role: AppRole; sale_mode: SaleMode; order_status: OrderStatus; fulfillment: Fulfillment; payment_status: PaymentStatus };
     CompositeTypes: { [_ in never]: never };
   };
 };
 
 type PublicSchema = Database['public'];
 export type Tables<T extends keyof PublicSchema['Tables']> = PublicSchema['Tables'][T]['Row'];
+export type Views<T extends keyof PublicSchema['Views']> = PublicSchema['Views'][T]['Row'];

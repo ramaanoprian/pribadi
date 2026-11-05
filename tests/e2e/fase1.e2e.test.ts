@@ -6,26 +6,14 @@
  *   SUPABASE_URL=... SUPABASE_ANON_KEY=... SUPABASE_SERVICE_ROLE_KEY=... npm run test:e2e
  * Opsional: INVITE_FN_URL (default ${SUPABASE_URL}/functions/v1/invite-staff), MAILPIT_URL.
  */
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { Database } from '../../src/lib/database.types';
 import { totp } from './totp';
+import { admin, ANON, client, login, ready, URL } from './env';
 
-const URL = process.env.SUPABASE_URL ?? 'http://127.0.0.1:54321';
-const ANON = process.env.SUPABASE_ANON_KEY ?? '';
-const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY ?? '';
 const INVITE_FN = process.env.INVITE_FN_URL ?? `${URL}/functions/v1/invite-staff`;
 const MAILPIT = process.env.MAILPIT_URL ?? 'http://127.0.0.1:54324';
-
-const client = () => createClient<Database>(URL, ANON, { auth: { persistSession: false, autoRefreshToken: false } });
-const admin = createClient<Database>(URL, SERVICE, { auth: { persistSession: false } });
-
-async function login(email: string, password: string) {
-  const c = client();
-  const { error } = await c.auth.signInWithPassword({ email, password });
-  if (error) throw error;
-  return c;
-}
 
 /** Owner masuk lalu menyelesaikan 2FA (daftar TOTP bila belum ada). */
 async function loginOwnerAal2(): Promise<SupabaseClient<Database>> {
@@ -44,7 +32,6 @@ async function loginOwnerAal2(): Promise<SupabaseClient<Database>> {
   return c;
 }
 
-const ready = Boolean(ANON && SERVICE);
 
 describe.skipIf(!ready)('Fase 1 — fondasi (E2E)', () => {
   let owner1: SupabaseClient<Database>;
@@ -62,10 +49,11 @@ describe.skipIf(!ready)('Fase 1 — fondasi (E2E)', () => {
 
   it('tamu (anon) hanya membaca pengaturan publik, tidak bisa membaca profil/audit', async () => {
     const anon = client();
-    const s = await anon.from('app_settings').select('key, is_public');
+    const s = await anon.from('pengaturan_publik').select('key');
     expect(s.error).toBeNull();
-    expect(s.data!.length).toBeGreaterThan(0);
-    expect(s.data!.every((x) => x.is_public)).toBe(true);
+    expect(s.data!.map((x) => x.key)).toContain('toko.nama');
+    expect(s.data!.map((x) => x.key)).not.toContain('pelanggan.ambang_vip');
+    expect((await anon.from('app_settings').select('key')).error).not.toBeNull();
     expect((await anon.from('profiles').select('*')).error).not.toBeNull();
     expect((await anon.from('audit_logs').select('*')).error).not.toBeNull();
     expect((await anon.rpc('set_user_role', { p_user_id: crypto.randomUUID(), p_role: 'owner' })).error).not.toBeNull();

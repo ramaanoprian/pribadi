@@ -3,7 +3,7 @@
 Website publik (etalase + pemesanan) dan dashboard internal toko kue GutVibes.
 React + TypeScript + Vite + Tailwind (PWA) · Supabase (Postgres, Auth, RLS, Edge Functions).
 
-**Status: Fase 1 — Fondasi (selesai, menunggu uji).**
+**Status: Fase 2 — Katalog & pesanan (selesai, menunggu uji).** Fase 1 (fondasi) sudah selesai.
 
 ## Menjalankan secara lokal
 
@@ -28,6 +28,9 @@ Email (undangan staf, konfirmasi daftar, lupa kata sandi) di lokal masuk ke Mail
 | Admin | admin@gutvibes.test | Admin12345 |
 | Admin Baking | baking@gutvibes.test | Baking12345 |
 | Member | member@gutvibes.test | Member12345 |
+| Member kedua | budi@gutvibes.test | Member12345 |
+
+Data contoh juga berisi 4 kategori, 6 produk (Soes Vla 1 batch = 70 pcs, ready stock & pre-order), promo `MANIS10`, konten web, dan 30 pesanan campuran tamu & member.
 
 Owner pertama kali masuk akan diminta memindai kode QR dengan aplikasi authenticator (Google Authenticator, Authy, dll.).
 
@@ -47,6 +50,15 @@ npx supabase secrets set APP_URL=https://domain-anda
 - Jangan jalankan `seed.sql` di produksi.
 - Backup terjadwal: aktifkan Point-in-Time Recovery / daily backup di dashboard Supabase (paket Pro).
 
+## Catatan Fase 2
+
+- Alur pesanan: `menunggu_konfirmasi → dikonfirmasi → siap → selesai` (atau `dibatalkan`). Pesanan diantar wajib diisi ongkirnya sebelum pembayaran bisa dikonfirmasi.
+- Stok produk ready stock berkurang saat pembayaran dikonfirmasi dan kembali bila pesanan dibatalkan. Pre-order tidak memengaruhi stok.
+- Pembayaran tanpa payment gateway: Admin mengonfirmasi manual, bukti transfer opsional (bucket privat `bukti-transfer`). Foto produk ada di bucket publik `produk`.
+- Rate limit: pesanan per nomor HP (5/jam) dan per IP (20/jam), lacak pesanan per IP (10/15 menit). Semuanya bisa diubah di Pengaturan. Saat uji lokal berulang, reset penghitungnya dengan:
+  `psql postgresql://postgres:postgres@127.0.0.1:54322/postgres -c "truncate private.rate_limits"`
+- Notifikasi WhatsApp belum dikirim (Fase 3). Titik kirimnya sudah disiapkan di `private.notify_order`. Halaman sukses checkout punya tombol "Konfirmasi via WhatsApp" ke nomor toko.
+
 ## Tes
 
 ```bash
@@ -54,6 +66,7 @@ npm test               # unit test frontend (normalisasi HP, matriks hak akses)
 npm run test:db        # pgTAP di PostgreSQL lokal tanpa Docker (pakai shim Supabase)
 npx supabase test db   # pgTAP di Supabase lokal (Docker)
 npm run test:e2e       # E2E API ke Supabase lokal; butuh SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
+                       # (opsional INVITE_FN_URL bila Edge Function dijalankan di luar `supabase start`)
 ```
 
 ## Struktur
@@ -71,6 +84,8 @@ src/pages/             halaman publik, akun member, dashboard
 ## Keamanan (ringkas)
 
 - RLS aktif di semua tabel; peran dibaca dari `profiles`. Hak tabel juga dibatasi per kolom.
+- Tamu hanya membaca view publik (`katalog_produk`, `katalog_kategori`, `konten_publik`, `pengaturan_publik`) dan memanggil RPC `create_order`, `check_promo`, `track_order`, `track_order_by_token`.
+- Harga selalu dihitung ulang di server. HPP (`cost_per_unit`, `cost_snapshot`) tidak bisa dibaca Admin; Owner membacanya lewat view `biaya_produk`.
 - Peran tidak pernah diambil dari data pendaftar. Staf hanya bisa dibuat lewat undangan Owner (Edge Function + Auth Admin API).
 - Hak Owner hanya berlaku bila sesi sudah 2FA (`aal2`). Ini ditegakkan di database, bukan cuma di UI.
 - `audit_logs` hanya bisa ditambah (append-only). Isinya: perubahan peran/status akun, undangan, pengaturan, kontak pelanggan, ekspor data.

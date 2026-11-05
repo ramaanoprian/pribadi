@@ -3,7 +3,7 @@ import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { clsx } from 'clsx';
 import { LogOut, Menu, UserRound, X } from 'lucide-react';
 import { useAuth } from '@/auth/AuthProvider';
-import { navFor, ROLE_LABEL, type NavItem } from '@/lib/permissions';
+import { CURRENT_PHASE, navFor, ROLE_LABEL, type NavItem } from '@/lib/permissions';
 import { NAV_ICONS } from '@/components/icons';
 import { Logo } from '@/components/Logo';
 import { LoadingState } from '@/components/ui/States';
@@ -42,7 +42,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                   <li key={item.path}>
                     <NavLink
                       to={item.path}
-                      end
+                      end={item.path === '/dashboard' || item.path === '/dashboard/produksi'}
                       onClick={onNavigate}
                       className={({ isActive }) =>
                         clsx(
@@ -56,7 +56,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                         <>
                           {Icon && <Icon className={single ? 'size-5' : 'size-4'} aria-hidden />}
                           <span className="flex-1">{item.label}</span>
-                          {item.phase > 1 && (
+                          {item.phase > CURRENT_PHASE && (
                             <span className={clsx('rounded-md px-1.5 text-[10px] font-bold', isActive ? 'bg-white/20' : 'bg-cream-200 text-cocoa-500')}>
                               F{item.phase}
                             </span>

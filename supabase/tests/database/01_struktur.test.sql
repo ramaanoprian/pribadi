@@ -12,8 +12,8 @@ select is(
   (select string_agg(table_name || ':' || privilege_type, ',' order by table_name, privilege_type)
      from information_schema.role_table_grants
     where grantee = 'anon' and table_schema in ('public', 'private')),
-  'app_settings:SELECT',
-  'Anon hanya boleh SELECT app_settings (yang publik)');
+  'katalog_kategori:SELECT,katalog_produk:SELECT,konten_publik:SELECT,pengaturan_publik:SELECT',
+  'Anon hanya boleh SELECT view publik (katalog, konten, pengaturan publik)');
 
 select is(
   (select count(*)::int from pg_proc p join pg_namespace n on n.oid = p.pronamespace

@@ -61,6 +61,9 @@ export function canEdit(role: AppRole | null | undefined, module: ModuleKey): bo
   return accessOf(role, module) === 'F';
 }
 
+/** Fase pembangunan yang sudah selesai; modul dengan fase lebih besar tampil sebagai "segera hadir". */
+export const CURRENT_PHASE = 2;
+
 /** Item menu dashboard. `phase` = fase pembangunan modul tersebut. */
 export type NavItem = {
   path: string;

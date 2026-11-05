@@ -1,10 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link, Navigate } from 'react-router-dom';
-import { ShieldCheck, UserCog, Users, MailQuestion } from 'lucide-react';
+import { AlertTriangle, CalendarClock, ClipboardCheck, PackageCheck, ShieldCheck, UserCog, Users, MailQuestion, Wallet } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/auth/AuthProvider';
 import { errorMessage } from '@/lib/errors';
-import { formatDateTime } from '@/lib/format';
+import { formatDateTime, formatRupiah } from '@/lib/format';
+import { FULFILLMENT_LABEL } from '@/lib/orders';
+import { StatusBadge } from '@/components/order/OrderParts';
 import { ROLE_LABEL } from '@/lib/permissions';
 import { Card, PageHeader } from '@/components/ui/Card';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/States';
@@ -21,6 +23,90 @@ function Stat({ icon, label, value, to }: { icon: React.ReactNode; label: string
     </Card>
   );
   return to ? <Link to={to}>{body}</Link> : body;
+}
+
+function OperationalOverview() {
+  const q = useQuery({
+    queryKey: ['overview', 'operasional'],
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const start = new Date();
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(start.getTime() + 86_400_000);
+      const count = (s: 'menunggu_konfirmasi' | 'dikonfirmasi' | 'siap') =>
+        supabase.from('orders').select('id', { count: 'exact', head: true }).eq('status', s);
+      const [menunggu, dikonfirmasi, siap, hariIni, stok] = await Promise.all([
+        count('menunggu_konfirmasi'),
+        count('dikonfirmasi'),
+        count('siap'),
+        supabase
+          .from('orders')
+          .select('id, kode, nama_pemesan, jadwal, fulfillment, status, total')
+          .gte('jadwal', start.toISOString())
+          .lt('jadwal', end.toISOString())
+          .not('status', 'in', '(selesai,dibatalkan)')
+          .order('jadwal'),
+        supabase.from('products').select('id, nama, stok, satuan').eq('aktif', true).eq('sale_mode', 'ready_stock').lte('stok', 5).order('stok'),
+      ]);
+      const err = menunggu.error ?? dikonfirmasi.error ?? siap.error ?? hariIni.error ?? stok.error;
+      if (err) throw err;
+      return { menunggu: menunggu.count ?? 0, dikonfirmasi: dikonfirmasi.count ?? 0, siap: siap.count ?? 0, hariIni: hariIni.data ?? [], stok: stok.data ?? [] };
+    },
+  });
+  if (q.isLoading) return <LoadingState />;
+  if (q.isError) return <ErrorState message={errorMessage(q.error)} onRetry={() => void q.refetch()} />;
+  const d = q.data!;
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Stat icon={<Wallet className="size-5" />} label="Menunggu konfirmasi" value={d.menunggu} to="/dashboard/pesanan?status=menunggu_konfirmasi" />
+        <Stat icon={<ClipboardCheck className="size-5" />} label="Perlu disiapkan" value={d.dikonfirmasi} to="/dashboard/pesanan?status=dikonfirmasi" />
+        <Stat icon={<PackageCheck className="size-5" />} label="Siap ambil/kirim" value={d.siap} to="/dashboard/pesanan?status=siap" />
+        <Stat icon={<CalendarClock className="size-5" />} label="Jadwal hari ini" value={d.hariIni.length} />
+      </div>
+      <div className="grid gap-5 lg:grid-cols-[1.5fr_1fr]">
+        <Card>
+          <h2 className="mb-3 font-sans text-lg font-bold">Jadwal hari ini</h2>
+          {d.hariIni.length === 0 ? (
+            <EmptyState title="Tidak ada jadwal ambil/antar hari ini" />
+          ) : (
+            <ul className="divide-y divide-cream-200">
+              {d.hariIni.map((o) => (
+                <li key={o.id}>
+                  <Link to={`/dashboard/pesanan/${o.id}`} className="flex items-center justify-between gap-3 py-2.5 hover:bg-cream-50">
+                    <span className="text-sm">
+                      <span className="font-semibold tabular-nums">{new Date(o.jadwal).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span> · {o.nama_pemesan}
+                      <span className="block text-xs text-cocoa-500">
+                        {o.kode} · {FULFILLMENT_LABEL[o.fulfillment]} · {formatRupiah(o.total)}
+                      </span>
+                    </span>
+                    <StatusBadge status={o.status} />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+        <Card>
+          <h2 className="mb-3 flex items-center gap-2 font-sans text-lg font-bold">
+            <AlertTriangle className="size-5 text-amber-500" /> Stok produk menipis
+          </h2>
+          {d.stok.length === 0 ? (
+            <p className="text-sm text-cocoa-500">Semua produk ready stock aman (stok di atas 5).</p>
+          ) : (
+            <ul className="space-y-2 text-sm">
+              {d.stok.map((p) => (
+                <li key={p.id} className="flex justify-between">
+                  <span>{p.nama}</span>
+                  <span className={p.stok === 0 ? 'font-bold text-red-600' : 'font-semibold text-amber-700'}>{p.stok === 0 ? 'Habis' : `${p.stok} ${p.satuan}`}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+      </div>
+    </div>
+  );
 }
 
 function OwnerOverview() {
@@ -87,11 +173,15 @@ export function Overview() {
         title={`Halo, ${profile?.nama?.split(' ')[0] ?? ''}`}
         description={`Anda masuk sebagai ${profile ? ROLE_LABEL[profile.role] : ''}.`}
       />
-      {profile?.role === 'owner' ? (
-        <OwnerOverview />
-      ) : (
-        <EmptyState title="Ringkasan operasional" description="Pesanan hari ini, pesanan menunggu konfirmasi, dan stok menipis akan tampil di sini mulai Fase 2." />
-      )}
+      <div className="space-y-8">
+        <OperationalOverview />
+        {profile?.role === 'owner' && (
+          <section>
+            <h2 className="mb-4 text-xl font-bold">Akun & aktivitas</h2>
+            <OwnerOverview />
+          </section>
+        )}
+      </div>
     </>
   );
 }

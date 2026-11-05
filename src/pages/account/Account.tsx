@@ -1,6 +1,7 @@
 import { LogOut, Stamp } from 'lucide-react';
 import { useAuth } from '@/auth/AuthProvider';
 import { AddressBook } from '@/components/account/AddressBook';
+import { OrderHistory } from '@/components/account/OrderHistory';
 import { ChangePasswordCard, ProfileCard } from '@/components/account/ProfileCard';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -19,18 +20,19 @@ export function Account() {
         </Button>
       </div>
       <div className="grid gap-5 md:grid-cols-2">
-        <div className="space-y-5">
+        <div className="space-y-5 md:order-2">
           <ProfileCard phoneRequired />
           <ChangePasswordCard />
         </div>
-        <div className="space-y-5">
+        <div className="space-y-5 md:order-1">
+          <OrderHistory />
           <AddressBook />
           <Card className="bg-cream-50">
             <div className="flex items-start gap-3">
               <Stamp className="mt-0.5 size-5 shrink-0 text-brand-500" />
               <div>
-                <p className="font-semibold">Riwayat pesanan & kartu stamp</p>
-                <p className="text-sm text-cocoa-600">Segera hadir: riwayat pesanan, pesan ulang 1 klik, kartu stamp, lencana, dan hadiah.</p>
+                <p className="font-semibold">Kartu stamp, lencana & hadiah</p>
+                <p className="text-sm text-cocoa-600">Segera hadir: kumpulkan 1 stamp setiap pesanan selesai.</p>
               </div>
             </div>
           </Card>

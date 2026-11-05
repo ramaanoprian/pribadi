@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { MailCheck } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { errorMessage } from '@/lib/errors';
@@ -13,7 +13,10 @@ import { AuthCard } from './AuthCard';
 type Errors = Partial<Record<'nama' | 'email' | 'no_hp' | 'password' | 'konfirmasi', string>>;
 
 export function Register() {
-  const [form, setForm] = useState({ nama: '', email: '', no_hp: '', password: '', konfirmasi: '' });
+  const [params] = useSearchParams();
+  // Prefill dari ajakan daftar setelah checkout tamu.
+  const [form, setForm] = useState({ nama: params.get('nama') ?? '', email: '', no_hp: params.get('hp') ?? '', password: '', konfirmasi: '' });
+  const next = params.get('next');
   const [errors, setErrors] = useState<Errors>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +48,7 @@ export function Register() {
       password: form.password,
       options: {
         data: { nama: form.nama.trim(), no_hp: normalizePhone(form.no_hp) },
-        emailRedirectTo: `${window.location.origin}/akun`,
+        emailRedirectTo: `${window.location.origin}${next && next.startsWith('/') && !next.startsWith('//') ? next : '/akun'}`,
       },
     });
     setLoading(false);

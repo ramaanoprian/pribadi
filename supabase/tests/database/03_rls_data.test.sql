@@ -20,11 +20,12 @@ select is((select phone_normalized from public.customers where nama = 'Tamu'), '
 select throws_ok($$ insert into public.customers (nama, phone_normalized) values ('Dobel', '0813-3333-4444') $$,
   '23505', null, 'Pelanggan digabung per nomor (08xx & +628xx dianggap sama)');
 
+select count(*)::int as total_pelanggan from public.customers \gset
+
 -- ANON
 select tests.as_anon();
-select is((select count(*)::int from public.app_settings),
-          (select count(*)::int from public.app_settings where is_public), 'Anon hanya melihat pengaturan publik');
-select ok((select count(*) from public.app_settings) > 0, 'Anon dapat membaca pengaturan publik');
+select ok((select count(*) from public.pengaturan_publik) > 0, 'Anon membaca pengaturan publik lewat view');
+select throws_ok('select * from public.app_settings', '42501', null, 'Anon tidak membaca tabel app_settings langsung');
 select throws_ok('select * from public.profiles', '42501', null, 'Anon tidak bisa membaca profil');
 select throws_ok('select * from public.customers', '42501', null, 'Anon tidak bisa membaca pelanggan');
 select throws_ok('select * from public.audit_logs', '42501', null, 'Anon tidak bisa membaca audit log');
@@ -42,7 +43,7 @@ select throws_ok($$ insert into public.customers (nama, phone_normalized) values
 
 -- ADMIN
 select tests.login_as(:'admin_id');
-select is((select count(*)::int from public.customers), 2, 'Admin melihat semua kontak pelanggan');
+select is((select count(*)::int from public.customers), :total_pelanggan, 'Admin melihat semua kontak pelanggan');
 select lives_ok($$ update public.customers set nama = 'Tamu Setia' where nama = 'Tamu' $$, 'Admin bisa mengubah kontak pelanggan');
 select throws_ok($$ update public.customers set is_vip = true where nama = 'Tamu Setia' $$,
   '42501', null, 'Admin tidak bisa mengubah penanda VIP');
