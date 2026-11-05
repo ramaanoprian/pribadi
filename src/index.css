@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+
+  /* Krem — latar hangat */
+  --color-cream-50: #fffcf7;
+  --color-cream-100: #fff8ee;
+  --color-cream-200: #f7ecdc;
+  --color-cream-300: #eedcc3;
+
+  /* Cokelat — teks & elemen utama */
+  --color-cocoa-400: #b8927a;
+  --color-cocoa-500: #9a7258;
+  --color-cocoa-600: #7d5640;
+  --color-cocoa-700: #63412f;
+  --color-cocoa-800: #4a2f21;
+  --color-cocoa-900: #33201a;
+
+  /* Oranye logo GutVibes — aksen */
+  --color-brand-50: #fff3ea;
+  --color-brand-100: #fee2d0;
+  --color-brand-200: #fdc4a1;
+  --color-brand-400: #f7803f;
+  --color-brand-500: #f25a0e;
+  --color-brand-600: #d94b06;
+  --color-brand-700: #b23d07;
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-cream-100 font-sans text-cocoa-900 antialiased;
+  }
+  h1, h2, h3 {
+    @apply font-display;
+  }
+  /* Anak grid boleh menyusut (cegah tabel lebar mendorong halaman ke samping di HP). */
+  .grid > * {
+    min-width: 0;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand-500;
+  }
+}
