@@ -35,6 +35,8 @@ export type PublicOrder = {
   subtotal: number;
   diskon: number;
   promo_kode: string | null;
+  /** Nama hadiah member yang dipakai */
+  hadiah?: string | null;
   shipping_cost: number;
   ongkir_diset: boolean;
   gratis_ongkir: boolean;

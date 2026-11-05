@@ -40,6 +40,7 @@ const ProductionHistory = lazy(() => import('@/pages/dashboard/production/Produc
 const Ingredients = lazy(() => import('@/pages/dashboard/production/Ingredients').then((m) => ({ default: m.Ingredients })));
 const Recipes = lazy(() => import('@/pages/dashboard/production/Recipes').then((m) => ({ default: m.Recipes })));
 const FinishedStock = lazy(() => import('@/pages/dashboard/production/FinishedStock').then((m) => ({ default: m.FinishedStock })));
+const Loyalty = lazy(() => import('@/pages/dashboard/loyalty/Loyalty').then((m) => ({ default: m.Loyalty })));
 const ComingSoon = lazy(() => import('@/pages/dashboard/ComingSoon').then((m) => ({ default: m.ComingSoon })));
 
 // Modul yang belum dibangun: tampil sesuai hak akses, berisi info fase.
@@ -91,6 +92,7 @@ export default function App() {
           <Route path="stok-bahan" element={<RequireModule module="stok_bahan"><Ingredients /></RequireModule>} />
           <Route path="resep" element={<RequireModule module="resep"><Recipes /></RequireModule>} />
           <Route path="stok-produk" element={<RequireModule module="stok_produk"><FinishedStock /></RequireModule>} />
+          <Route path="loyalti" element={<RequireModule module="koreksi_stamp"><Loyalty /></RequireModule>} />
           <Route path="whatsapp" element={<RequireModule module="whatsapp"><WhatsApp /></RequireModule>} />
           <Route path="log-aktivitas" element={<RequireModule module="log_aktivitas"><ActivityLog /></RequireModule>} />
           <Route path="pengaturan" element={<RequireModule module="pengaturan"><Settings /></RequireModule>} />

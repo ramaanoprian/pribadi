@@ -235,3 +235,19 @@ begin
   perform set_config('request.jwt.claims', '', true);
 end;
 $$;
+
+-- =====================================================================
+-- FASE 5: stamp untuk pesanan member yang sudah selesai (tanpa WhatsApp)
+-- =====================================================================
+do $$
+declare
+  v_id uuid;
+begin
+  if exists (select 1 from public.stamps) then return; end if;
+  update public.app_settings set value = 'false' where key = 'whatsapp.aktif';
+  for v_id in select id from public.orders where status = 'selesai' and user_id is not null order by completed_at loop
+    perform private.award_stamp(v_id);
+  end loop;
+  update public.app_settings set value = 'true' where key = 'whatsapp.aktif';
+end;
+$$;

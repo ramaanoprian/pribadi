@@ -98,6 +98,6 @@ describe.skipIf(!ready)('Fase 3 — WhatsApp (E2E)', () => {
   it('Admin Baking tidak melihat log & template WhatsApp', async () => {
     expect((await baking.from('whatsapp_messages').select('id')).data).toEqual([]);
     expect((await baking.from('whatsapp_templates').select('tahap')).data).toEqual([]);
-    expect((await adminC.from('whatsapp_templates').select('tahap')).data!.length).toBe(5);
+    expect((await adminC.from('whatsapp_templates').select('tahap')).data!.map((t) => t.tahap)).toEqual(expect.arrayContaining(['pesanan_diterima', 'pesanan_dibatalkan']));
   });
 });

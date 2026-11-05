@@ -11,6 +11,8 @@ import { formatPhone, normalizePhone } from '@/lib/phone';
 import { formatRupiah } from '@/lib/format';
 import { toLocalInput, type PublicOrder } from '@/lib/orders';
 import { useContent, usePublicSettings } from '@/hooks/usePublic';
+import { useMyLoyalty } from '@/components/account/LoyaltyCard';
+import { effectiveStatus } from '@/lib/loyalty';
 import type { Fulfillment } from '@/lib/database.types';
 import { Alert, Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -40,6 +42,9 @@ export function Checkout() {
   const [promo, setPromo] = useState<Promo>(null);
   const [promoMsg, setPromoMsg] = useState<string | null>(null);
   const [checkingPromo, setCheckingPromo] = useState(false);
+  const [hadiah, setHadiah] = useState('');
+  const loyalty = useMyLoyalty();
+  const availableRewards = (loyalty.data?.hadiah_saya ?? []).filter((h) => effectiveStatus(h.status, h.expires_at) === 'tersedia');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -158,6 +163,7 @@ export function Checkout() {
       p_catatan: form.catatan.trim() || null,
       p_kode_promo: promo?.kode ?? null,
       p_persetujuan_wa: true,
+      p_kode_hadiah: hadiah || null,
     });
     setSubmitting(false);
     if (error) return setServerError(errorMessage(error));
@@ -254,7 +260,31 @@ export function Checkout() {
                 </li>
               ))}
             </ul>
-            <div className="flex gap-2">
+            {isMember && availableRewards.length > 0 && (
+              <label className="block text-sm">
+                <span className="font-semibold">Pakai hadiah stamp</span>
+                <select
+                  className="mt-1 h-11 w-full rounded-xl border border-cream-300 bg-white px-3 text-sm"
+                  value={hadiah}
+                  onChange={(e) => {
+                    setHadiah(e.target.value);
+                    if (e.target.value) {
+                      setPromo(null);
+                      setPromoInput('');
+                    }
+                  }}
+                >
+                  <option value="">Tidak memakai hadiah</option>
+                  {availableRewards.map((h) => (
+                    <option key={h.kode} value={h.kode}>
+                      {h.nama} ({h.kode})
+                    </option>
+                  ))}
+                </select>
+                {hadiah && <span className="mt-1 block text-xs text-cocoa-500">Potongan dihitung saat pesanan dibuat & diverifikasi Admin. Tidak bisa digabung promo.</span>}
+              </label>
+            )}
+            <div className={clsx('flex gap-2', hadiah && 'pointer-events-none opacity-50')}>
               <label className="relative flex-1">
                 <span className="sr-only">Kode promo</span>
                 <Tag className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-cocoa-400" />

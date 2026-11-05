@@ -40,7 +40,7 @@ export function OrderTimeline({ order }: { order: TimelineInput }) {
   );
 }
 
-type SummaryInput = Pick<PublicOrder, 'subtotal' | 'diskon' | 'promo_kode' | 'shipping_cost' | 'ongkir_diset' | 'gratis_ongkir' | 'total' | 'fulfillment'> & {
+type SummaryInput = Pick<PublicOrder, 'subtotal' | 'diskon' | 'promo_kode' | 'hadiah' | 'shipping_cost' | 'ongkir_diset' | 'gratis_ongkir' | 'total' | 'fulfillment'> & {
   items: { nama: string; satuan: string; harga: number; qty: number; subtotal: number }[];
 };
 
@@ -63,7 +63,14 @@ export function OrderSummary({ order }: { order: SummaryInput }) {
       </ul>
       <dl className="mt-2 space-y-1 border-t border-cream-200 pt-2">
         <Row label="Subtotal" value={formatRupiah(order.subtotal)} />
-        {order.diskon > 0 && <Row label={`Diskon${order.promo_kode ? ` (${order.promo_kode})` : ''}`} value={`−${formatRupiah(order.diskon)}`} className="text-emerald-700" />}
+        {order.diskon > 0 && (
+          <Row
+            label={`Diskon${order.promo_kode ? ` (${order.promo_kode})` : order.hadiah ? ` (hadiah: ${order.hadiah})` : ''}`}
+            value={`−${formatRupiah(order.diskon)}`}
+            className="text-emerald-700"
+          />
+        )}
+        {order.diskon === 0 && order.hadiah && <Row label={`Hadiah: ${order.hadiah}`} value="✓" className="text-emerald-700" />}
         {order.fulfillment === 'antar' && (
           <Row label="Ongkir" value={order.gratis_ongkir ? 'Gratis' : pendingShipping ? 'Menunggu konfirmasi admin' : formatRupiah(order.shipping_cost)} />
         )}

@@ -18,6 +18,7 @@ import { DataTable, Pagination, SearchInput, type Column } from '@/components/ui
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/States';
 import { useToast } from '@/components/ui/Toast';
 import { useNavigate } from 'react-router-dom';
+import { CustomerLoyalty } from './loyalty/CustomerLoyalty';
 
 type Customer = Tables<'customers'>;
 const PAGE_SIZE = 20;
@@ -124,6 +125,7 @@ export function CustomerDetail() {
           </Button>
         }
       />
+      {c.user_id && <CustomerLoyalty customerId={c.id} />}
       <Card>
         <h2 className="font-sans font-bold">Pesanan ({q.data!.orders.length})</h2>
         {q.data!.orders.length === 0 ? (

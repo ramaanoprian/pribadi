@@ -10,6 +10,7 @@ import { uploadFile } from '@/lib/storage';
 import { FULFILLMENT_LABEL, PAYMENT_LABEL, waLink } from '@/lib/orders';
 import { OrderSummary, OrderTimeline, StatusBadge } from '@/components/order/OrderParts';
 import { OrderNotifications } from '@/components/order/OrderNotifications';
+import { OrderReward } from '@/components/order/OrderReward';
 import { Alert, Badge, Card, PageHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input, Textarea } from '@/components/ui/Field';
@@ -80,7 +81,7 @@ export function OrderDetail() {
           Isi ongkir dulu
         </Button>
       ) : (
-        <Button icon={<Wallet className="size-4" />} onClick={() => setModal('bayar')}>
+        <Button icon={<Wallet className="size-4" />} disabled={Boolean(o.reward_redemption_id && !o.reward_verified_at)} title={o.reward_redemption_id && !o.reward_verified_at ? 'Verifikasi hadiah member terlebih dahulu' : undefined} onClick={() => setModal('bayar')}>
           Konfirmasi pembayaran
         </Button>
       );
@@ -159,7 +160,7 @@ export function OrderDetail() {
           </Card>
           <Card>
             <h2 className="font-sans font-bold">Item</h2>
-            <OrderSummary order={{ ...o, items: o.order_items.map((i) => ({ ...i, nama: i.nama_produk })) }} />
+            <OrderSummary order={{ ...o, hadiah: o.reward_redemption_id ? 'kartu stamp' : null, items: o.order_items.map((i) => ({ ...i, nama: i.nama_produk })) }} />
             {o.order_items.some((i) => i.sale_mode === 'ready_stock') && (
               <p className="mt-3 text-xs text-cocoa-500">
                 Item ready stock {o.stok_dipotong ? 'sudah memotong stok.' : 'akan memotong stok saat pembayaran dikonfirmasi.'}
@@ -172,6 +173,16 @@ export function OrderDetail() {
             <h2 className="mb-3 font-sans font-bold">Linimasa</h2>
             <OrderTimeline order={o} />
           </Card>
+          {o.reward_redemption_id && (
+            <OrderReward
+              orderId={o.id}
+              redemptionId={o.reward_redemption_id}
+              status={o.status}
+              verifiedAt={o.reward_verified_at}
+              rewardDiskon={o.reward_diskon}
+              gratisOngkir={o.reward_gratis_ongkir}
+            />
+          )}
           <OrderNotifications orderId={o.id} />
           {o.bukti_transfer_path && (
             <Card>

@@ -9,6 +9,7 @@ export type OrderStatus = 'menunggu_konfirmasi' | 'dikonfirmasi' | 'siap' | 'sel
 export type Fulfillment = 'ambil' | 'antar';
 export type PaymentStatus = 'belum_bayar' | 'lunas';
 export type WaStatus = 'pending' | 'mengirim' | 'terkirim' | 'gagal';
+export type RewardJenis = 'diskon_nominal' | 'diskon_persen' | 'produk_gratis' | 'gratis_ongkir';
 
 export type Database = {
   public: {
@@ -22,6 +23,7 @@ export type Database = {
           email: string | null;
           aktif: boolean;
           last_sign_in_at: string | null;
+          phone_verified_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -241,6 +243,11 @@ export type Database = {
           cancelled_at: string | null;
           cancelled_by: string | null;
           alasan_batal: string | null;
+          reward_redemption_id: string | null;
+          reward_diskon: number;
+          reward_gratis_ongkir: boolean;
+          reward_verified_at: string | null;
+          reward_verified_by: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -357,6 +364,63 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      rewards: {
+        Row: { id: string; nama: string; jenis: RewardJenis; nilai: number; maks_diskon: number | null; product_id: string | null; updated_at: string };
+        Insert: never;
+        Update: { nama?: string; jenis?: RewardJenis; nilai?: number; maks_diskon?: number | null; product_id?: string | null };
+        Relationships: [];
+      };
+      stamp_rules: {
+        Row: { id: number; aktif: boolean; stamps_per_reward: number; min_belanja_per_stamp: number; reward_id: string; masa_berlaku_hari: number; updated_by: string | null; updated_at: string };
+        Insert: never;
+        Update: { aktif?: boolean; stamps_per_reward?: number; min_belanja_per_stamp?: number; masa_berlaku_hari?: number };
+        Relationships: [];
+      };
+      badges: {
+        Row: { id: string; kode: string; nama: string; deskripsi: string; ambang: number; ikon: string; aktif: boolean };
+        Insert: { kode: string; nama: string; deskripsi?: string; ambang: number; ikon?: string; aktif?: boolean };
+        Update: { nama?: string; deskripsi?: string; ambang?: number; ikon?: string; aktif?: boolean };
+        Relationships: [];
+      };
+      stamps: {
+        Row: { id: number; customer_id: string; order_id: string | null; tipe: 'earn' | 'adjust' | 'kartu_penuh'; qty: number; alasan: string | null; created_by: string | null; created_at: string };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      customer_badges: {
+        Row: { customer_id: string; badge_id: string; earned_at: string };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      reward_redemptions: {
+        Row: {
+          id: string;
+          customer_id: string;
+          reward_id: string | null;
+          kode: string;
+          nama: string;
+          jenis: RewardJenis;
+          nilai: number;
+          maks_diskon: number | null;
+          product_id: string | null;
+          status: 'tersedia' | 'dipakai' | 'kedaluwarsa' | 'dibatalkan';
+          expires_at: string;
+          order_id: string | null;
+          used_at: string | null;
+          verified_by: string | null;
+          verified_at: string | null;
+          catatan: string | null;
+          created_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [
+          { foreignKeyName: 'reward_redemptions_customer_id_fkey'; columns: ['customer_id']; isOneToOne: false; referencedRelation: 'customers'; referencedColumns: ['id'] },
+          { foreignKeyName: 'reward_redemptions_order_id_fkey'; columns: ['order_id']; isOneToOne: false; referencedRelation: 'orders'; referencedColumns: ['id'] },
+        ];
+      };
       audit_logs: {
         Row: {
           id: number;
@@ -423,6 +487,7 @@ export type Database = {
           p_catatan?: string | null;
           p_kode_promo?: string | null;
           p_persetujuan_wa?: boolean;
+          p_kode_hadiah?: string | null;
         };
         Returns: Json;
       };
@@ -447,6 +512,15 @@ export type Database = {
       add_ingredient_stock: { Args: { p_ingredient_id: string; p_qty: number; p_total_harga: number; p_catatan?: string | null }; Returns: number };
       adjust_ingredient_stock: { Args: { p_ingredient_id: string; p_delta: number; p_alasan: string }; Returns: number };
       save_recipe: { Args: { p_product_id: string; p_yield: number; p_items: Json; p_catatan?: string | null }; Returns: string };
+      verify_order_reward: { Args: { p_order_id: string }; Returns: undefined };
+      reject_order_reward: { Args: { p_order_id: string; p_alasan: string }; Returns: undefined };
+      adjust_stamps: { Args: { p_customer_id: string; p_qty: number; p_alasan: string }; Returns: number };
+      redeem_reward_manual: { Args: { p_kode: string; p_catatan: string }; Returns: undefined };
+      request_phone_otp: { Args: { p_phone: string }; Returns: Json };
+      verify_phone_otp: { Args: { p_code: string }; Returns: Json };
+      my_loyalty: { Args: Record<string, never>; Returns: Json };
+      customer_loyalty: { Args: { p_customer_id: string }; Returns: Json };
+      loyalty_members: { Args: { p_search?: string | null; p_limit?: number; p_offset?: number }; Returns: Json };
       adjust_product_stock: { Args: { p_product_id: string; p_delta: number; p_alasan: string }; Returns: number };
     };
     Enums: { app_role: AppRole; sale_mode: SaleMode; order_status: OrderStatus; fulfillment: Fulfillment; payment_status: PaymentStatus };

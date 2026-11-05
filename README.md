@@ -3,7 +3,7 @@
 Website publik (etalase + pemesanan) dan dashboard internal toko kue GutVibes.
 React + TypeScript + Vite + Tailwind (PWA) · Supabase (Postgres, Auth, RLS, Edge Functions).
 
-**Status: Fase 1–4 selesai.**
+**Status: Fase 1–5 selesai.**
 
 ## Menjalankan secara lokal
 
@@ -84,6 +84,14 @@ npx supabase secrets set APP_URL=https://domain-anda WHATSAPP_PROVIDER=fonnte FO
 - Admin Baking hanya bisa input, melihat riwayat miliknya, dan melihat stok bahan. Resep & harga bahan tidak terlihat olehnya (hanya pratinjau pemakaian).
 - Pembatalan (Owner/Admin, wajib alasan) membalik stok bahan & produk. Pembatalan ditolak bila hasilnya sudah terjual (pakai koreksi stok).
 - Belanja bahan (jumlah + total harga) memperbarui harga rata-rata bahan.
+
+## Catatan Fase 5 (Loyalti)
+
+- 1 pesanan member selesai = 1 stamp (atau sesuai minimal belanja). UNIQUE `stamps.order_id` mencegah stamp ganda. Saat kartu penuh, hadiah terbuka (berlaku 6 bulan, bisa diatur) dan kartu baru dimulai.
+- Lencana diberikan otomatis berdasarkan jumlah pesanan selesai (1, 5, 10, 25; bisa diatur Owner).
+- Hadiah dipilih member di checkout (tidak bisa digabung promo). Admin wajib memverifikasi atau menolak hadiah sebelum mengonfirmasi pembayaran. Pesanan batal mengembalikan hadiah. Hadiah juga bisa ditukar langsung di toko.
+- Verifikasi nomor lewat OTP WhatsApp (dibatasi per jam). Setelah terverifikasi, pesanan tamu dengan nomor itu menjadi milik member, dan pesanan yang sudah selesai dihitung sebagai stamp (bisa dimatikan di Pengaturan).
+- Stamp hanya berubah lewat fungsi server; koreksi manual oleh Owner/Admin wajib alasan dan tercatat di log.
 
 ## Tes
 
