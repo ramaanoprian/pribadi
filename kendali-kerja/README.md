@@ -1,7 +1,7 @@
 # Kendali Kerja BYLT — perbaikan backend
 
 Draft migration untuk project Supabase `dokbylt` (`mvxceyvbiehxeolfxslw`).
-**Status: BELUM diterapkan ke produksi.** Terapkan berurutan setelah disetujui.
+**Status: sudah diterapkan ke produksi pada 2026-11-05** (disetujui pengguna).
 
 | Migration | Isi |
 |---|---|
@@ -9,6 +9,7 @@ Draft migration untuk project Supabase `dokbylt` (`mvxceyvbiehxeolfxslw`).
 | `20261105000200_bylt_attachment_types` | Bucket `bylt-evidence` menerima HEIC/HEIF dan PowerPoint; `bylt_register_attachment` memakai ukuran/MIME dari storage, bukan dari klien. |
 | `20261105000300_bylt_reminders_v2` | Pengingat ke PIC + pendukung; tugas tanpa PIC ke admin; "terlewati" diulang tiap hari (WIB); hormati preferensi pengingat. |
 | `20261105000400_bylt_recurrences` | Tabel `bylt_recurrences` + RPC `bylt_save_recurrence`/`bylt_delete_recurrence` (admin) + job harian `bylt-recurrences` (00:05 WIB). Perlu UI di frontend untuk mengatur aturannya. |
+| `20261105000500_bylt_recurrences_grants` | Tabel `bylt_recurrences` hanya bisa dibaca langsung; tulis lewat RPC. |
 
 Semua perubahan hanya menyentuh objek `bylt_*`. Policy, grant, dan fungsi dashboard dokumen
 (`records`, `activity`, bucket `lampiran`/`cadangan`, dll.) tidak diubah.
