@@ -45,15 +45,14 @@ export function RequireAuth() {
   return <Outlet />;
 }
 
-/** Khusus staf. Owner wajib 2FA sebelum bisa memakai dashboard. */
+/** Khusus staf (Owner, Admin, Admin Baking) yang aktif. */
 export function RequireStaff() {
-  const { loading, session, profile, mfaRequired } = useAuth();
+  const { loading, session, profile } = useAuth();
   const location = useLocation();
   if (loading) return <FullPageLoading />;
   if (!session) return <Navigate to={`/masuk?next=${encodeURIComponent(location.pathname)}`} replace />;
   if (!profile || !isStaffRole(profile.role)) return <Navigate to="/akun" replace />;
   if (!profile.aktif) return <AccountInactive />;
-  if (mfaRequired) return <Navigate to={`/dashboard/2fa?next=${encodeURIComponent(location.pathname)}`} replace />;
   return <Outlet />;
 }
 

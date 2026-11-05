@@ -9,14 +9,14 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { Database } from '../../src/lib/database.types';
-import { admin, ANON, client, login, loginOwnerAal2, ready, URL } from './env';
+import { admin, ANON, client, login, loginOwner, ready, URL } from './env';
 
 const INVITE_FN = process.env.INVITE_FN_URL ?? `${URL}/functions/v1/invite-staff`;
 const MAILPIT = process.env.MAILPIT_URL ?? 'http://127.0.0.1:54324';
 
 describe.skipIf(!ready)('Fase 1 — fondasi (E2E)', () => {
   let owner1: SupabaseClient<Database>;
-  let ownerAal2: SupabaseClient<Database>;
+  let ownerC: SupabaseClient<Database>;
   let adminC: SupabaseClient<Database>;
   let baking: SupabaseClient<Database>;
   let member: SupabaseClient<Database>;
@@ -59,19 +59,14 @@ describe.skipIf(!ready)('Fase 1 — fondasi (E2E)', () => {
     }
   });
 
-  it('Owner tanpa 2FA (aal1) tidak punya hak Owner', async () => {
-    const { data } = await owner1.from('audit_logs').select('id');
-    expect(data).toEqual([]);
-    const r = await owner1.rpc('set_user_role', { p_user_id: crypto.randomUUID(), p_role: 'admin' });
-    expect(r.error?.code).toBe('42501');
-  });
-
-  it('Owner menyelesaikan 2FA (TOTP) lalu mendapat akses penuh', async () => {
-    ownerAal2 = await loginOwnerAal2();
-    const { data: aal } = await ownerAal2.auth.mfa.getAuthenticatorAssuranceLevel();
-    expect(aal?.currentLevel).toBe('aal2');
-    const p = await ownerAal2.from('profiles').select('id');
+  it('Owner langsung punya hak penuh tanpa 2FA', async () => {
+    ownerC = await loginOwner();
+    const { data: aal } = await ownerC.auth.mfa.getAuthenticatorAssuranceLevel();
+    expect(aal?.currentLevel).toBe('aal1');
+    const p = await ownerC.from('profiles').select('id');
     expect(p.data!.length).toBeGreaterThanOrEqual(4);
+    const logs = await owner1.from('audit_logs').select('id');
+    expect(logs.error).toBeNull();
   });
 
   it('Admin & Admin Baking tidak bisa mengelola akun, Admin Baking tidak melihat pelanggan', async () => {
@@ -102,18 +97,18 @@ describe.skipIf(!ready)('Fase 1 — fondasi (E2E)', () => {
     const email = `staf-${Date.now()}@gutvibes.test`;
     const { data: created } = await admin.auth.admin.createUser({ email, password: 'Rahasia123', email_confirm: true, user_metadata: { nama: 'Staf Uji' } });
     const id = created.user!.id;
-    expect((await ownerAal2.rpc('set_user_role', { p_user_id: id, p_role: 'admin', p_alasan: 'Uji E2E' })).error).toBeNull();
-    expect((await ownerAal2.rpc('set_user_active', { p_user_id: id, p_aktif: false })).error).toBeNull();
+    expect((await ownerC.rpc('set_user_role', { p_user_id: id, p_role: 'admin', p_alasan: 'Uji E2E' })).error).toBeNull();
+    expect((await ownerC.rpc('set_user_active', { p_user_id: id, p_aktif: false })).error).toBeNull();
 
     const staf = await login(email, 'Rahasia123');
     expect((await staf.from('app_settings').select('key').eq('is_public', false)).data).toEqual([]);
 
-    const { data: logs } = await ownerAal2.from('audit_logs').select('aksi, alasan, data_baru').eq('entitas_id', id).order('id');
+    const { data: logs } = await ownerC.from('audit_logs').select('aksi, alasan, data_baru').eq('entitas_id', id).order('id');
     expect(logs!.map((l) => l.aksi)).toEqual(['akun.ubah', 'akun.ubah']);
     expect(logs![0].alasan).toBe('Uji E2E');
   });
 
-  it('undangan staf lewat Edge Function: hanya Owner aal2, email terkirim, peran diterapkan', async () => {
+  it('undangan staf lewat Edge Function: hanya Owner, email terkirim, peran diterapkan', async () => {
     const email = `undangan-${Date.now()}@gutvibes.test`;
     const call = async (c: SupabaseClient<Database>) => {
       const { data } = await c.auth.getSession();
@@ -124,9 +119,8 @@ describe.skipIf(!ready)('Fase 1 — fondasi (E2E)', () => {
       });
     };
     expect((await call(adminC)).status).toBe(403);
-    expect((await call(owner1)).status).toBe(403); // Owner tanpa 2FA
 
-    const res = await call(ownerAal2);
+    const res = await call(ownerC);
     expect(res.status, await res.clone().text()).toBe(200);
 
     const { data: prof } = await admin.from('profiles').select('role, nama').eq('email', email).single();
@@ -138,17 +132,17 @@ describe.skipIf(!ready)('Fase 1 — fondasi (E2E)', () => {
     expect(mail.messages_count ?? mail.total).toBeGreaterThan(0);
 
     // Undangan ulang ke email yang sudah terdaftar ditolak.
-    expect((await call(ownerAal2)).status).toBe(400);
+    expect((await call(ownerC)).status).toBe(400);
   });
 
   it('Owner mengubah pengaturan (tervalidasi) — Admin tidak bisa', async () => {
-    const bad = await ownerAal2.from('app_settings').update({ value: 'enam puluh' }).eq('key', 'pelanggan.hari_tidur');
+    const bad = await ownerC.from('app_settings').update({ value: 'enam puluh' }).eq('key', 'pelanggan.hari_tidur');
     expect(bad.error).not.toBeNull();
-    const ok = await ownerAal2.from('app_settings').update({ value: 45 }).eq('key', 'pelanggan.hari_tidur').select('value');
+    const ok = await ownerC.from('app_settings').update({ value: 45 }).eq('key', 'pelanggan.hari_tidur').select('value');
     expect(ok.data![0].value).toBe(45);
     await adminC.from('app_settings').update({ value: 90 }).eq('key', 'pelanggan.hari_tidur');
     const { data } = await admin.from('app_settings').select('value').eq('key', 'pelanggan.hari_tidur').single();
     expect(data!.value).toBe(45);
-    await ownerAal2.from('app_settings').update({ value: 60 }).eq('key', 'pelanggan.hari_tidur');
+    await ownerC.from('app_settings').update({ value: 60 }).eq('key', 'pelanggan.hari_tidur');
   });
 });

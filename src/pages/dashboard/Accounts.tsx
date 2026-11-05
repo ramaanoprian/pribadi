@@ -238,7 +238,7 @@ function ChangeRoleModal({ target, onClose }: { target: Profile; onClose: () => 
             </option>
           ))}
         </Select>
-        {role === 'owner' && <p className="text-sm text-amber-700">Owner punya akses penuh, termasuk keuangan dan pengaturan. Owner wajib 2FA saat masuk.</p>}
+        {role === 'owner' && <p className="text-sm text-amber-700">Owner punya akses penuh, termasuk keuangan dan pengaturan.</p>}
         <Input label="Alasan (opsional)" value={alasan} onChange={(e) => setAlasan(e.target.value)} maxLength={200} hint="Tercatat di log aktivitas." />
       </div>
     </Modal>

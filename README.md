@@ -25,7 +25,7 @@ Email (undangan staf, konfirmasi daftar, lupa kata sandi) di lokal masuk ke Mail
 
 | Peran | Email | Kata sandi |
 |---|---|---|
-| Owner (wajib 2FA) | owner@gutvibes.test | Owner12345 |
+| Owner | owner@gutvibes.test | Owner12345 |
 | Admin | admin@gutvibes.test | Admin12345 |
 | Admin Baking | baking@gutvibes.test | Baking12345 |
 | Member | member@gutvibes.test | Member12345 |
@@ -33,7 +33,6 @@ Email (undangan staf, konfirmasi daftar, lupa kata sandi) di lokal masuk ke Mail
 
 Data contoh juga berisi 4 kategori, 6 produk (Soes Vla 1 batch = 70 pcs, ready stock & pre-order), promo `MANIS10`, konten web, dan 30 pesanan campuran tamu & member.
 
-Owner pertama kali masuk akan diminta memindai kode QR dengan aplikasi authenticator (Google Authenticator, Authy, dll.).
 
 ### Hosting frontend
 
@@ -50,7 +49,7 @@ npx supabase functions deploy whatsapp-admin
 npx supabase secrets set APP_URL=https://domain-anda WHATSAPP_PROVIDER=fonnte FONNTE_TOKEN=token-perangkat WA_WORKER_SECRET=string-acak-panjang
 ```
 
-- Auth > Providers > Email: aktifkan konfirmasi email. Auth > MFA: aktifkan TOTP.
+- Auth > Providers > Email: aktifkan konfirmasi email.
 - Auth > URL Configuration: isi Site URL dan tambahkan `https://domain-anda/**` ke Redirect URLs.
 - Owner pertama: daftar lewat `/daftar`, lalu jalankan di SQL Editor:
   `update public.profiles set role = 'owner' where email = 'email-anda';`
@@ -137,7 +136,7 @@ supabase/functions/    Edge Functions (invite-staff, whatsapp-worker, whatsapp-a
 supabase/tests/        tes pgTAP
 supabase/seed.sql      data contoh lokal
 src/lib/permissions.ts matriks hak akses (UI); penegakan sebenarnya di RLS
-src/auth/              sesi, profil, 2FA, penjaga rute
+src/auth/              sesi, profil, penjaga rute
 src/pages/             halaman publik, akun member, dashboard
 src/components/charts/ grafik SVG ringan (warna tervalidasi buta warna)
 src/lib/export.ts      ekspor Excel/PDF (lazy-load + log aktivitas)
@@ -152,7 +151,7 @@ scripts/test-db.sh     pgTAP tanpa Docker (shim Supabase di scripts/db)
 - Tamu hanya membaca view publik (`katalog_produk`, `katalog_kategori`, `konten_publik`, `pengaturan_publik`) dan memanggil RPC `create_order`, `check_promo`, `track_order`, `track_order_by_token`.
 - Harga selalu dihitung ulang di server. HPP (`cost_per_unit`, `cost_snapshot`) tidak bisa dibaca Admin; Owner membacanya lewat view `biaya_produk`.
 - Peran tidak pernah diambil dari data pendaftar. Staf hanya bisa dibuat lewat undangan Owner (Edge Function + Auth Admin API).
-- Hak Owner hanya berlaku bila sesi sudah 2FA (`aal2`). Ini ditegakkan di database, bukan cuma di UI.
+- Owner masuk dengan email & kata sandi saja (tanpa 2FA). Gunakan kata sandi yang kuat dan jangan dibagikan.
 - `audit_logs` hanya bisa ditambah (append-only). Isinya: perubahan peran/status akun, undangan, pengaturan, kontak pelanggan, ekspor data.
 - Rate limit generik (`private.hit_rate_limit`) dipakai untuk pesanan, lacak pesanan, dan OTP di fase-fase berikutnya.
 - Rahasia (service role, token Fonnte) hanya disimpan sebagai secret server.

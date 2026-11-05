@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { PublicLayout } from '@/layouts/PublicLayout';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
@@ -17,10 +17,8 @@ import { Checkout } from '@/pages/public/Checkout';
 import { Track, TrackByToken } from '@/pages/public/Track';
 import { Story } from '@/pages/public/Story';
 import { Location } from '@/pages/public/Location';
-import { FullPageLoading } from '@/components/ui/States';
 
 // Halaman staf dimuat terpisah agar pengunjung website tidak mengunduhnya.
-const Mfa = lazy(() => import('@/pages/auth/Mfa').then((m) => ({ default: m.Mfa })));
 const Overview = lazy(() => import('@/pages/dashboard/Overview').then((m) => ({ default: m.Overview })));
 const Accounts = lazy(() => import('@/pages/dashboard/Accounts').then((m) => ({ default: m.Accounts })));
 const ActivityLog = lazy(() => import('@/pages/dashboard/ActivityLog').then((m) => ({ default: m.ActivityLog })));
@@ -71,7 +69,7 @@ export default function App() {
       </Route>
 
       <Route element={<RequireAuth />}>
-        <Route path="dashboard/2fa" element={<Suspense fallback={<FullPageLoading />}><Mfa /></Suspense>} />
+        <Route path="dashboard/2fa" element={<Navigate to="/dashboard" replace />} />
       </Route>
 
       <Route path="dashboard" element={<RequireStaff />}>

@@ -3,13 +3,13 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '../../src/lib/database.types';
 import type { PL } from '../../src/lib/finance';
-import { admin, login, loginOwnerAal2, ready } from './env';
+import { admin, login, loginOwner, ready } from './env';
 
 describe.skipIf(!ready)('Fase 6 — biaya & laporan (E2E)', () => {
   let owner: SupabaseClient<Database>;
   let adminC: SupabaseClient<Database>;
   beforeAll(async () => {
-    owner = await loginOwnerAal2();
+    owner = await loginOwner();
     adminC = await login('admin@gutvibes.test', 'Admin12345');
   });
 

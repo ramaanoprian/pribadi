@@ -3,7 +3,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '../../src/lib/database.types';
 import type { PublicOrder } from '../../src/lib/orders';
-import { admin, ANON, client, login, loginOwnerAal2, ready, URL } from './env';
+import { admin, ANON, client, login, loginOwner, ready, URL } from './env';
 
 const WORKER = `${URL}/functions/v1/whatsapp-worker`;
 const ADMIN_FN = `${URL}/functions/v1/whatsapp-admin`;
@@ -42,7 +42,7 @@ describe.skipIf(!ready)('Fase 3 — WhatsApp (E2E)', () => {
     await admin.from('app_settings').update({ value: 60 }).eq('key', 'whatsapp.maks_per_menit');
     adminC = await login('admin@gutvibes.test', 'Admin12345');
     baking = await login('baking@gutvibes.test', 'Baking12345');
-    owner = await loginOwnerAal2();
+    owner = await loginOwner();
   });
 
   it('worker menolak permintaan tanpa secret yang benar', async () => {

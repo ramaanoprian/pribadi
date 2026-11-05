@@ -45,7 +45,7 @@ select tests.login_as(:'admin_id');
 select is((select count(*)::int from public.analisis_pelanggan), 0, 'Admin tidak melihat analisis pelanggan');
 select throws_ok($$ select public.customer_ranking() $$, '42501', null, 'Admin tidak bisa membuka peringkat');
 select tests.login_as(:'owner_id', 'aal1');
-select is((select count(*)::int from public.analisis_pelanggan), 0, 'Owner tanpa 2FA tidak melihat analisis');
+select ok((select count(*)::int from public.analisis_pelanggan) > 0, 'Owner tanpa 2FA langsung melihat analisis');
 
 select tests.login_as(:'owner_id', 'aal2');
 select results_eq($$ select jumlah_pesanan, total_belanja, is_repeat, is_vip, is_tidur, jenis from public.analisis_pelanggan where nama = 'Ani Member' $$,

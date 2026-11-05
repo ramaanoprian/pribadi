@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { useDeviceStatus } from '@/hooks/useWhatsApp';
-import { MessageCircle, ShieldCheck } from 'lucide-react';
+import { MessageCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { errorMessage } from '@/lib/errors';
 import { formatDateTime, formatRupiah } from '@/lib/format';
@@ -141,13 +141,6 @@ export function Settings() {
     <>
       <PageHeader title="Pengaturan" description="Nilai default sistem yang bisa Anda ubah. Setiap perubahan tercatat di log aktivitas." />
       <div className="space-y-5">
-        <Card className="flex items-start gap-3">
-          <ShieldCheck className="mt-0.5 size-5 shrink-0 text-emerald-600" />
-          <div>
-            <p className="font-semibold">Verifikasi 2 langkah Owner: aktif</p>
-            <p className="text-sm text-cocoa-600">Akun Owner selalu diminta kode authenticator saat masuk. Tanpa 2FA, database menolak semua akses Owner.</p>
-          </div>
-        </Card>
         <WhatsAppStatusCard />
         {q.isLoading ? (
           <LoadingState />
