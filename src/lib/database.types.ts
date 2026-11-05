@@ -421,6 +421,49 @@ export type Database = {
           { foreignKeyName: 'reward_redemptions_order_id_fkey'; columns: ['order_id']; isOneToOne: false; referencedRelation: 'orders'; referencedColumns: ['id'] },
         ];
       };
+      expense_categories: {
+        Row: { id: string; nama: string; urutan: number; aktif: boolean };
+        Insert: { nama: string; urutan?: number; aktif?: boolean };
+        Update: { nama?: string; urutan?: number; aktif?: boolean };
+        Relationships: [];
+      };
+      recurring_expenses: {
+        Row: { id: string; nama: string; category_id: string; nominal_perkiraan: number; tanggal: number; aktif: boolean; created_at: string };
+        Insert: { nama: string; category_id: string; nominal_perkiraan: number; tanggal?: number; aktif?: boolean };
+        Update: { nama?: string; category_id?: string; nominal_perkiraan?: number; tanggal?: number; aktif?: boolean };
+        Relationships: [];
+      };
+      expenses: {
+        Row: {
+          id: string;
+          tanggal: string;
+          periode: string;
+          category_id: string;
+          nominal: number;
+          keterangan: string | null;
+          nota_path: string | null;
+          recurring_id: string | null;
+          rincian: Json | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: { tanggal: string; category_id: string; nominal: number; keterangan?: string | null; nota_path?: string | null; recurring_id?: string | null; rincian?: Json | null };
+        Update: { tanggal?: string; category_id?: string; nominal?: number; keterangan?: string | null; nota_path?: string | null; rincian?: Json | null };
+        Relationships: [];
+      };
+      budgets: {
+        Row: { periode: string; category_id: string; nominal: number; updated_at: string };
+        Insert: { periode: string; category_id: string; nominal: number };
+        Update: { nominal?: number };
+        Relationships: [];
+      };
+      period_closings: {
+        Row: { periode: string; status: 'ditutup' | 'dibuka'; closed_by: string | null; closed_at: string; reopened_by: string | null; reopened_at: string | null; alasan_buka: string | null };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       audit_logs: {
         Row: {
           id: number;
@@ -521,6 +564,10 @@ export type Database = {
       my_loyalty: { Args: Record<string, never>; Returns: Json };
       customer_loyalty: { Args: { p_customer_id: string }; Returns: Json };
       loyalty_members: { Args: { p_search?: string | null; p_limit?: number; p_offset?: number }; Returns: Json };
+      close_period: { Args: { p_periode: string }; Returns: undefined };
+      reopen_period: { Args: { p_periode: string; p_alasan: string }; Returns: undefined };
+      report_profit_loss: { Args: { p_from: string; p_to: string }; Returns: Json };
+      owner_dashboard: { Args: { p_bulan?: string | null }; Returns: Json };
       adjust_product_stock: { Args: { p_product_id: string; p_delta: number; p_alasan: string }; Returns: number };
     };
     Enums: { app_role: AppRole; sale_mode: SaleMode; order_status: OrderStatus; fulfillment: Fulfillment; payment_status: PaymentStatus };

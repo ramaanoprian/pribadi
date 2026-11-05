@@ -135,6 +135,7 @@ begin
       when i = 30 then 'menunggu_konfirmasi'
       when i % 11 = 0 then 'dibatalkan'
       else 'selesai' end;
+    if i between 23 and 26 then v_created := date_trunc('hour', now()) - make_interval(days => 27 - i, hours => 2); end if;
     if i >= 28 then v_created := now() - make_interval(hours => (31 - i) * 3); end if;
     v_ful := case when i % 2 = 0 then 'antar' else 'ambil' end;
     v_ship := case when v_ful = 'antar' then 10000 + (i % 3) * 5000 else 0 end;
@@ -152,7 +153,7 @@ begin
             false, v_created,
             case when v_status in ('dikonfirmasi', 'siap', 'selesai') then v_created + interval '1 hour' end,
             case when v_status in ('siap', 'selesai') then v_created + interval '20 hours' end,
-            case when v_status = 'selesai' then v_created + interval '1 day' end,
+            case when v_status = 'selesai' then least(v_created + interval '1 day', now() - interval '1 hour') end,
             case when v_status = 'dibatalkan' then v_created + interval '2 hours' end,
             case when v_status = 'dibatalkan' then 'Pelanggan membatalkan' end)
     returning id into v_order;
@@ -249,5 +250,58 @@ begin
     perform private.award_stamp(v_id);
   end loop;
   update public.app_settings set value = 'true' where key = 'whatsapp.aktif';
+end;
+$$;
+
+-- =====================================================================
+-- FASE 6: biaya 3 bulan, biaya rutin, anggaran bulan ini
+-- =====================================================================
+do $$
+declare
+  v_now date := (now() at time zone 'Asia/Jakarta')::date;
+  v_bulan date;
+  i int;
+  cat record;
+  v_sewa uuid; v_listrik uuid; v_gaji uuid;
+begin
+  if exists (select 1 from public.expenses) then return; end if;
+  select id into cat from public.expense_categories where nama = 'Tempat';
+  insert into public.recurring_expenses (nama, category_id, nominal_perkiraan, tanggal)
+  values ('Sewa tempat', (select id from public.expense_categories where nama = 'Tempat'), 350000, 1) returning id into v_sewa;
+  insert into public.recurring_expenses (nama, category_id, nominal_perkiraan, tanggal)
+  values ('Listrik & air', (select id from public.expense_categories where nama = 'Utilitas'), 120000, 10) returning id into v_listrik;
+  insert into public.recurring_expenses (nama, category_id, nominal_perkiraan, tanggal)
+  values ('Gaji karyawan', (select id from public.expense_categories where nama = 'Tenaga kerja'), 400000, 25) returning id into v_gaji;
+
+  for i in reverse 2..0 loop
+    v_bulan := (date_trunc('month', v_now) - make_interval(months => i))::date;
+    insert into public.expenses (tanggal, category_id, nominal, keterangan, recurring_id)
+    values (v_bulan, (select id from public.expense_categories where nama = 'Tempat'), 350000, 'Sewa tempat', v_sewa);
+    if i > 0 or extract(day from v_now) >= 10 then
+      insert into public.expenses (tanggal, category_id, nominal, keterangan, recurring_id)
+      values (v_bulan + 9, (select id from public.expense_categories where nama = 'Utilitas'), 110000 + i * 8000, 'Listrik & air', v_listrik);
+    end if;
+    if i > 0 then
+      insert into public.expenses (tanggal, category_id, nominal, keterangan, recurring_id, rincian)
+      values (v_bulan + 24, (select id from public.expense_categories where nama = 'Tenaga kerja'), 400000, 'Gaji karyawan', v_gaji,
+              '[{"nama": "Joko (baking)", "nominal": 250000}, {"nama": "Rina (admin)", "nominal": 150000}]');
+    end if;
+    insert into public.expenses (tanggal, category_id, nominal, keterangan) values
+      (least(v_bulan + 4, v_now), (select id from public.expense_categories where nama = 'Kemasan'), 60000 + i * 5000, 'Box kue & stiker'),
+      (least(v_bulan + 12, v_now), (select id from public.expense_categories where nama = 'Pemasaran'), 50000, 'Iklan Instagram'),
+      (least(v_bulan + 15, v_now), (select id from public.expense_categories where nama = 'Pengiriman'), 45000 - i * 5000, 'Kurir gratis ongkir'),
+      (least(v_bulan + 3, v_now), (select id from public.expense_categories where nama = 'Lain-lain'), 25000, 'Gas LPG');
+  end loop;
+  insert into public.expenses (tanggal, category_id, nominal, keterangan)
+  values ((date_trunc('month', v_now) - interval '1 month')::date + 6, (select id from public.expense_categories where nama = 'Peralatan'), 150000, 'Spatula & loyang');
+
+  insert into public.budgets (periode, category_id, nominal)
+  select date_trunc('month', v_now)::date, c.id, b.nominal
+  from (values ('Tempat', 350000), ('Utilitas', 125000), ('Tenaga kerja', 400000), ('Kemasan', 55000),
+               ('Pemasaran', 80000), ('Pengiriman', 40000), ('Lain-lain', 30000)) as b(nama, nominal)
+  join public.expense_categories c on c.nama = b.nama;
+
+  insert into public.period_closings (periode, status, closed_at)
+  values ((date_trunc('month', v_now) - interval '2 months')::date, 'ditutup', now());
 end;
 $$;

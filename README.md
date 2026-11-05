@@ -3,7 +3,7 @@
 Website publik (etalase + pemesanan) dan dashboard internal toko kue GutVibes.
 React + TypeScript + Vite + Tailwind (PWA) · Supabase (Postgres, Auth, RLS, Edge Functions).
 
-**Status: Fase 1–5 selesai.**
+**Status: Fase 1–6 selesai.**
 
 ## Menjalankan secara lokal
 
@@ -92,6 +92,14 @@ npx supabase secrets set APP_URL=https://domain-anda WHATSAPP_PROVIDER=fonnte FO
 - Hadiah dipilih member di checkout (tidak bisa digabung promo). Admin wajib memverifikasi atau menolak hadiah sebelum mengonfirmasi pembayaran. Pesanan batal mengembalikan hadiah. Hadiah juga bisa ditukar langsung di toko.
 - Verifikasi nomor lewat OTP WhatsApp (dibatasi per jam). Setelah terverifikasi, pesanan tamu dengan nomor itu menjadi milik member, dan pesanan yang sudah selesai dihitung sebagai stamp (bisa dimatikan di Pengaturan).
 - Stamp hanya berubah lewat fungsi server; koreksi manual oleh Owner/Admin wajib alasan dan tercatat di log.
+
+## Catatan Fase 6 (Biaya & laporan) — khusus Owner
+
+- Biaya operasional per kategori (kategori bisa ditambah), dengan foto nota opsional (bucket privat `nota`) dan rincian per orang untuk gaji. Biaya rutin bulanan tinggal dikonfirmasi nominalnya; satu konfirmasi per bulan.
+- Anggaran bulanan per kategori dengan indikator hijau (< 80%), kuning (80–100%), merah (> 100%).
+- Bulan yang sudah ditutup tidak bisa diubah (ditegakkan oleh trigger database). Buka kembali wajib alasan dan tercatat di log.
+- Laba rugi dihitung berdasarkan tanggal pesanan selesai (WIB): penjualan − diskon + ongkir = pendapatan; − HPP (snapshot) = laba kotor; − biaya operasional = laba bersih. Tersedia juga margin per produk.
+- Ekspor Excel/PDF dimuat hanya saat dipakai, dan setiap ekspor tercatat di log aktivitas.
 
 ## Tes
 

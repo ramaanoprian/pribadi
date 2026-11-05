@@ -24,6 +24,11 @@ export const ENTITAS_LABEL: Record<string, string> = {
   hadiah: 'Hadiah',
   hadiah_member: 'Hadiah member',
   lencana: 'Lencana',
+  biaya: 'Biaya',
+  anggaran: 'Anggaran',
+  periode: 'Periode',
+  laporan_laba_rugi: 'Laporan laba rugi',
+  laporan_margin_produk: 'Laporan margin produk',
 };
 
 const roleLabel = (r: unknown) => ROLE_LABEL[r as AppRole] ?? String(r);
@@ -59,6 +64,18 @@ export function describeAudit(l: Log): string {
       return `mencatat belanja bahan (+${baru.qty})`;
     case 'bahan.koreksi_stok':
       return `mengoreksi stok bahan ${lama.stok} → ${baru.stok}`;
+    case 'akun.verifikasi_hp':
+      return `memverifikasi nomor WhatsApp${baru.klaim_stamp ? ` (+${baru.klaim_stamp} stamp dari pesanan tamu)` : ''}`;
+    case 'periode.tutup':
+      return `menutup periode ${l.entitas_id}`;
+    case 'periode.buka_kembali':
+      return `membuka kembali periode ${l.entitas_id}`;
+    case 'biaya.tambah':
+      return `mencatat biaya Rp${Number(baru.nominal ?? 0).toLocaleString('id-ID')}`;
+    case 'biaya.ubah':
+      return 'mengubah data biaya';
+    case 'biaya.hapus':
+      return `menghapus biaya Rp${Number(lama.nominal ?? 0).toLocaleString('id-ID')}`;
     case 'pesan_wa.kirim_ulang':
       return 'mengirim ulang pesan WhatsApp';
     case 'pesan_wa.uji_kirim':

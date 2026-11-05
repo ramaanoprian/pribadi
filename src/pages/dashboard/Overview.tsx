@@ -8,6 +8,7 @@ import { formatDateTime, formatRupiah } from '@/lib/format';
 import { FULFILLMENT_LABEL } from '@/lib/orders';
 import { StatusBadge } from '@/components/order/OrderParts';
 import { useDeviceStatus } from '@/hooks/useWhatsApp';
+import { OwnerFinance } from './finance/OwnerFinance';
 import { Alert } from '@/components/ui/Card';
 import { ROLE_LABEL } from '@/lib/permissions';
 import { Card, PageHeader } from '@/components/ui/Card';
@@ -212,7 +213,6 @@ function OwnerOverview() {
           </ul>
         )}
       </Card>
-      <p className="text-sm text-cocoa-500">Grafik pendapatan, biaya, laba bersih, dan anggaran hadir di Fase 6.</p>
     </div>
   );
 }
@@ -228,7 +228,11 @@ export function Overview() {
       />
       <div className="space-y-8">
         <WhatsAppAlerts owner={profile?.role === 'owner'} />
-        <OperationalOverview />
+        {profile?.role === 'owner' && <OwnerFinance />}
+        <section>
+          {profile?.role === 'owner' && <h2 className="mb-4 text-xl font-bold">Operasional</h2>}
+          <OperationalOverview />
+        </section>
         {profile?.role === 'owner' && (
           <section>
             <h2 className="mb-4 text-xl font-bold">Akun & aktivitas</h2>
