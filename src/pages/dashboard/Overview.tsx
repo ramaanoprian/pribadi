@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link, Navigate } from 'react-router-dom';
-import { AlertTriangle, CalendarClock, ClipboardCheck, PackageCheck, ShieldCheck, UserCog, Users, MailQuestion, Wallet } from 'lucide-react';
+import { AlertTriangle, CalendarClock, ClipboardCheck, PackageCheck, UserCog, Users, MailQuestion, Wallet } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/auth/AuthProvider';
 import { errorMessage } from '@/lib/errors';
@@ -185,11 +185,10 @@ function OwnerOverview() {
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Stat icon={<UserCog className="size-5" />} label="Staf aktif" value={d.staf} to="/dashboard/akun" />
         <Stat icon={<Users className="size-5" />} label="Member terdaftar" value={d.member} to="/dashboard/akun?tab=member" />
         <Stat icon={<MailQuestion className="size-5" />} label="Undangan perlu dicek" value={d.undangan} to="/dashboard/akun?tab=undangan" />
-        <Stat icon={<ShieldCheck className="size-5" />} label="2FA Owner" value={<span className="text-lg text-emerald-700">Aktif</span>} />
       </div>
       <Card>
         <div className="mb-3 flex items-center justify-between">

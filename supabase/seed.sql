@@ -3,7 +3,7 @@
 -- Fase 1: akun per peran. Fase 2: kategori, 6 produk, promo, konten web,
 -- 30 pesanan campuran tamu & member.
 --
---   owner@gutvibes.test   / Owner12345   (Owner — wajib 2FA saat masuk)
+--   owner@gutvibes.test   / Owner12345   (Owner)
 --   admin@gutvibes.test   / Admin12345   (Admin)
 --   baking@gutvibes.test  / Baking12345  (Admin Baking)
 --   member@gutvibes.test  / Member12345  (Member / pelanggan)

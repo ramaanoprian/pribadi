@@ -37,7 +37,7 @@ select throws_ok(format($q$ insert into public.expenses (tanggal, category_id, n
 select throws_ok($$ select public.report_profit_loss(current_date - 30, current_date) $$, '42501', null, 'Admin tidak bisa membuka laporan laba rugi');
 select throws_ok($$ select public.owner_dashboard() $$, '42501', null, 'Admin tidak bisa membuka dashboard keuangan');
 select tests.login_as(:'owner_id', 'aal1');
-select is((select count(*)::int from public.expense_categories), 0, 'Owner tanpa 2FA tidak melihat biaya');
+select is((select count(*)::int from public.expense_categories), 8, 'Owner tanpa 2FA langsung melihat kategori biaya');
 
 -- ---------- Owner ----------
 select tests.login_as(:'owner_id', 'aal2');

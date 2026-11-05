@@ -1,8 +1,8 @@
--- Akun, peran, undangan staf, 2FA Owner
+-- Akun, peran, undangan staf, akses Owner
 begin;
 create extension if not exists pgtap with schema extensions;
 \ir ../helpers/helpers.psql
-select plan(26);
+select plan(25);
 
 -- Data
 select tests.create_user('owner@t.test', 'owner', 'Owner Uji') as owner_id \gset
@@ -24,19 +24,17 @@ select is((select role::text from public.profiles where id = '11111111-1111-4111
 
 select count(*)::int as total_profil from public.profiles \gset
 
--- 3. Undangan staf: Owner tanpa 2FA ditolak
+-- 3. Owner langsung punya hak penuh tanpa 2FA (sesi aal1)
 select tests.login_as(:'owner_id', 'aal1');
-select throws_ok($$ select public.create_staff_invitation('kasir@t.test', 'admin', 'Kasir') $$,
-  '42501', null, 'Owner tanpa 2FA (aal1) tidak bisa mengundang staf');
-select is((select count(*)::int from public.profiles), 1, 'Owner aal1 hanya melihat profilnya sendiri');
-
--- 4. Owner dengan 2FA
-select tests.login_as(:'owner_id', 'aal2');
 select lives_ok($$ select public.create_staff_invitation('Kasir@T.test', 'admin', 'Kasir Baru') $$,
-  'Owner aal2 bisa membuat undangan staf');
-select is((select count(*)::int from public.profiles), :total_profil, 'Owner aal2 melihat semua profil');
+  'Owner tanpa 2FA (aal1) bisa membuat undangan staf');
+select is((select count(*)::int from public.profiles), :total_profil, 'Owner tanpa 2FA melihat semua profil');
 select throws_ok($$ select public.create_staff_invitation('m1@t.test', 'admin') $$,
   '23505', null, 'Undangan untuk email terdaftar ditolak');
+
+-- 4. Owner yang kebetulan memakai 2FA (aal2) tetap diterima
+select tests.login_as(:'owner_id', 'aal2');
+select is((select count(*)::int from public.profiles), :total_profil, 'Owner dengan sesi aal2 tetap diterima');
 select tests.logout();
 
 -- 5. Pendaftaran publik dengan email yang sedang diundang TIDAK jadi staf
