@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Ganti https://gutvibes.id dengan domain Anda. Halaman produk (/menu/<slug>) ditemukan lewat tautan di /menu. -->
+<!-- Ganti https://pribadi-kappa.vercel.app bila memakai domain sendiri. Halaman produk (/menu/<slug>) ditemukan lewat tautan di /menu. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://gutvibes.id/</loc><changefreq>daily</changefreq></url>
-  <url><loc>https://gutvibes.id/menu</loc><changefreq>daily</changefreq></url>
-  <url><loc>https://gutvibes.id/cerita</loc><changefreq>monthly</changefreq></url>
-  <url><loc>https://gutvibes.id/lokasi</loc><changefreq>monthly</changefreq></url>
-  <url><loc>https://gutvibes.id/lacak</loc><changefreq>monthly</changefreq></url>
-  <url><loc>https://gutvibes.id/daftar</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://pribadi-kappa.vercel.app/</loc><changefreq>daily</changefreq></url>
+  <url><loc>https://pribadi-kappa.vercel.app/menu</loc><changefreq>daily</changefreq></url>
+  <url><loc>https://pribadi-kappa.vercel.app/cerita</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://pribadi-kappa.vercel.app/lokasi</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://pribadi-kappa.vercel.app/lacak</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://pribadi-kappa.vercel.app/daftar</loc><changefreq>monthly</changefreq></url>
 </urlset>
