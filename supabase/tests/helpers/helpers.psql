@@ -1,0 +1,60 @@
+-- Helper tes (dibuat di dalam transaksi tes, hilang saat ROLLBACK).
+-- Dipakai via:  \ir ../helpers/helpers.psql
+create schema if not exists tests;
+grant usage on schema tests to anon, authenticated;
+
+-- Buat user auth (memicu trigger profil) lalu set perannya.
+create or replace function tests.create_user(p_email text, p_role public.app_role default 'member',
+                                             p_nama text default null, p_no_hp text default null)
+returns uuid
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_id uuid := gen_random_uuid();
+begin
+  insert into auth.users (id, email, raw_user_meta_data, email_confirmed_at)
+  values (v_id, p_email,
+          jsonb_strip_nulls(jsonb_build_object('nama', coalesce(p_nama, split_part(p_email, '@', 1)), 'no_hp', p_no_hp)),
+          now());
+  if p_role <> 'member' then
+    update public.profiles set role = p_role where id = v_id;
+  end if;
+  return v_id;
+end;
+$$;
+
+-- Masuk sebagai user tertentu (aal1/aal2).
+create or replace function tests.login_as(p_uid uuid, p_aal text default 'aal1')
+returns void
+language plpgsql
+as $$
+begin
+  perform set_config('request.jwt.claims',
+    json_build_object('sub', p_uid, 'role', 'authenticated', 'aal', p_aal)::text, true);
+  execute 'set local role authenticated';
+end;
+$$;
+
+create or replace function tests.as_anon()
+returns void
+language plpgsql
+as $$
+begin
+  perform set_config('request.jwt.claims', json_build_object('role', 'anon')::text, true);
+  execute 'set local role anon';
+end;
+$$;
+
+create or replace function tests.logout()
+returns void
+language plpgsql
+as $$
+begin
+  execute 'reset role';
+  perform set_config('request.jwt.claims', '', true);
+end;
+$$;
+
+grant execute on all functions in schema tests to anon, authenticated;
