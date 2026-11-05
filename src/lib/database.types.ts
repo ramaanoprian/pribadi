@@ -510,6 +510,23 @@ export type Database = {
       biaya_bahan: { Row: { id: string; cost_per_unit: number }; Relationships: [] };
       biaya_produksi: { Row: { id: string; hpp_snapshot: number; hpp_per_unit: number; bahan_snapshot: Json }; Relationships: [] };
       nama_staf: { Row: { id: string; nama: string }; Relationships: [] };
+      analisis_pelanggan: {
+        Row: {
+          id: string;
+          nama: string;
+          phone_normalized: string;
+          jenis: 'member' | 'tamu';
+          jumlah_pesanan: number;
+          total_belanja: number;
+          pesanan_pertama: string | null;
+          pesanan_terakhir: string | null;
+          produk_favorit: string | null;
+          is_repeat: boolean;
+          is_vip: boolean;
+          is_tidur: boolean;
+        };
+        Relationships: [];
+      };
     };
     Functions: {
       normalize_phone: { Args: { p_phone: string }; Returns: string | null };
@@ -568,6 +585,11 @@ export type Database = {
       reopen_period: { Args: { p_periode: string; p_alasan: string }; Returns: undefined };
       report_profit_loss: { Args: { p_from: string; p_to: string }; Returns: Json };
       owner_dashboard: { Args: { p_bulan?: string | null }; Returns: Json };
+      customer_ranking: {
+        Args: { p_from?: string | null; p_to?: string | null; p_jenis?: string | null; p_status?: string | null; p_search?: string | null; p_sort?: string; p_limit?: number; p_offset?: number };
+        Returns: Json;
+      };
+      customer_analytics_summary: { Args: { p_from?: string | null; p_to?: string | null }; Returns: Json };
       adjust_product_stock: { Args: { p_product_id: string; p_delta: number; p_alasan: string }; Returns: number };
     };
     Enums: { app_role: AppRole; sale_mode: SaleMode; order_status: OrderStatus; fulfillment: Fulfillment; payment_status: PaymentStatus };

@@ -29,6 +29,7 @@ export const ENTITAS_LABEL: Record<string, string> = {
   periode: 'Periode',
   laporan_laba_rugi: 'Laporan laba rugi',
   laporan_margin_produk: 'Laporan margin produk',
+  analisis_pelanggan: 'Analisis pelanggan',
 };
 
 const roleLabel = (r: unknown) => ROLE_LABEL[r as AppRole] ?? String(r);

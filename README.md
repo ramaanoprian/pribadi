@@ -3,7 +3,7 @@
 Website publik (etalase + pemesanan) dan dashboard internal toko kue GutVibes.
 React + TypeScript + Vite + Tailwind (PWA) · Supabase (Postgres, Auth, RLS, Edge Functions).
 
-**Status: Fase 1–6 selesai.**
+**Status: Fase 1–7 selesai.**
 
 ## Menjalankan secara lokal
 
@@ -100,6 +100,12 @@ npx supabase secrets set APP_URL=https://domain-anda WHATSAPP_PROVIDER=fonnte FO
 - Bulan yang sudah ditutup tidak bisa diubah (ditegakkan oleh trigger database). Buka kembali wajib alasan dan tercatat di log.
 - Laba rugi dihitung berdasarkan tanggal pesanan selesai (WIB): penjualan − diskon + ongkir = pendapatan; − HPP (snapshot) = laba kotor; − biaya operasional = laba bersih. Tersedia juga margin per produk.
 - Ekspor Excel/PDF dimuat hanya saat dipakai, dan setiap ekspor tercatat di log aktivitas.
+
+## Catatan Fase 7 (Analisis pelanggan) — khusus Owner
+
+- VIEW `analisis_pelanggan` dihitung saat dibaca, hanya dari pesanan **selesai**: jumlah pesanan, total belanja, pesanan pertama/terakhir, produk favorit, repeat (≥ 2), VIP (ambang dari pengaturan atau penanda manual), tidur (pesanan terakhir lebih lama dari batas hari di pengaturan).
+- `customer_ranking` menyediakan filter periode, jenis (member/tamu), status (repeat/VIP/baru/tidur), pencarian, dan urutan (jumlah pesanan atau total belanja). `customer_analytics_summary` menghitung pelanggan aktif, baru vs kembali, tingkat repeat, rata-rata pesanan, tidur, dan VIP.
+- "Ajak kembali" membuka WhatsApp dengan pesan personal untuk dikirim manual satu per satu, bukan pesan massal.
 
 ## Tes
 

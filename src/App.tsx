@@ -43,6 +43,7 @@ const FinishedStock = lazy(() => import('@/pages/dashboard/production/FinishedSt
 const Loyalty = lazy(() => import('@/pages/dashboard/loyalty/Loyalty').then((m) => ({ default: m.Loyalty })));
 const Expenses = lazy(() => import('@/pages/dashboard/finance/Expenses').then((m) => ({ default: m.Expenses })));
 const Report = lazy(() => import('@/pages/dashboard/finance/Report').then((m) => ({ default: m.Report })));
+const CustomerAnalytics = lazy(() => import('@/pages/dashboard/finance/CustomerAnalytics').then((m) => ({ default: m.CustomerAnalytics })));
 const ComingSoon = lazy(() => import('@/pages/dashboard/ComingSoon').then((m) => ({ default: m.ComingSoon })));
 
 // Modul yang belum dibangun: tampil sesuai hak akses, berisi info fase.
@@ -97,6 +98,7 @@ export default function App() {
           <Route path="loyalti" element={<RequireModule module="koreksi_stamp"><Loyalty /></RequireModule>} />
           <Route path="biaya" element={<RequireModule module="biaya"><Expenses /></RequireModule>} />
           <Route path="laporan" element={<RequireModule module="laporan"><Report /></RequireModule>} />
+          <Route path="analisis-pelanggan" element={<RequireModule module="analisis_pelanggan"><CustomerAnalytics /></RequireModule>} />
           <Route path="whatsapp" element={<RequireModule module="whatsapp"><WhatsApp /></RequireModule>} />
           <Route path="log-aktivitas" element={<RequireModule module="log_aktivitas"><ActivityLog /></RequireModule>} />
           <Route path="pengaturan" element={<RequireModule module="pengaturan"><Settings /></RequireModule>} />
