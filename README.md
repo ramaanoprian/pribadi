@@ -3,7 +3,7 @@
 Website publik (etalase + pemesanan) dan dashboard internal toko kue GutVibes.
 React + TypeScript + Vite + Tailwind (PWA) · Supabase (Postgres, Auth, RLS, Edge Functions).
 
-**Status: Fase 2 — Katalog & pesanan (selesai, menunggu uji).** Fase 1 (fondasi) sudah selesai.
+**Status: Fase 3 — Notifikasi WhatsApp (selesai, menunggu uji).** Fase 1–2 sudah selesai.
 
 ## Menjalankan secara lokal
 
@@ -11,6 +11,7 @@ Prasyarat: Node 20+, Docker (untuk Supabase lokal).
 
 ```bash
 npm install
+cp supabase/functions/.env.example supabase/functions/.env   # WHATSAPP_PROVIDER=dummy untuk lokal
 npx supabase start          # menjalankan Postgres, Auth, API, Mailpit, Edge Runtime
 npx supabase db reset       # migrasi + data contoh (seed.sql)
 npx supabase status         # salin API URL & anon key
@@ -40,7 +41,9 @@ Owner pertama kali masuk akan diminta memindai kode QR dengan aplikasi authentic
 npx supabase link --project-ref <ref>
 npx supabase db push
 npx supabase functions deploy invite-staff
-npx supabase secrets set APP_URL=https://domain-anda
+npx supabase functions deploy whatsapp-worker --no-verify-jwt
+npx supabase functions deploy whatsapp-admin
+npx supabase secrets set APP_URL=https://domain-anda WHATSAPP_PROVIDER=fonnte FONNTE_TOKEN=token-perangkat WA_WORKER_SECRET=string-acak-panjang
 ```
 
 - Auth > Providers > Email: aktifkan konfirmasi email. Auth > MFA: aktifkan TOTP.
@@ -48,6 +51,12 @@ npx supabase secrets set APP_URL=https://domain-anda
 - Owner pertama: daftar lewat `/daftar`, lalu jalankan di SQL Editor:
   `update public.profiles set role = 'owner' where email = 'email-anda';`
 - Jangan jalankan `seed.sql` di produksi.
+- Worker WhatsApp: simpan URL & secret worker di Vault (SQL Editor), dengan secret yang sama dengan `WA_WORKER_SECRET`:
+  ```sql
+  select vault.create_secret('https://<ref>.supabase.co/functions/v1/whatsapp-worker', 'wa_worker_url');
+  select vault.create_secret('string-acak-panjang', 'wa_worker_secret');
+  ```
+  pg_cron membangunkan worker tiap menit, dan trigger membangunkannya seketika saat ada pesan baru. Lalu isi **Pengaturan → Alamat website** (untuk tautan lacak di pesan).
 - Backup terjadwal: aktifkan Point-in-Time Recovery / daily backup di dashboard Supabase (paket Pro).
 
 ## Catatan Fase 2
@@ -59,12 +68,22 @@ npx supabase secrets set APP_URL=https://domain-anda
   `psql postgresql://postgres:postgres@127.0.0.1:54322/postgres -c "truncate private.rate_limits"`
 - Notifikasi WhatsApp belum dikirim (Fase 3). Titik kirimnya sudah disiapkan di `private.notify_order`. Halaman sukses checkout punya tombol "Konfirmasi via WhatsApp" ke nomor toko.
 
+## Catatan Fase 3 (WhatsApp)
+
+- Alur: perubahan tahap pesanan → `private.notify_order` merender template ke tabel `whatsapp_messages` (status `pending`) dalam transaksi yang sama → trigger + pg_net membangunkan Edge Function `whatsapp-worker` → kirim via penyedia → `terkirim` / coba ulang (jeda 1 lalu 5 menit, maks. 3x) → `gagal`.
+- Pesanan tidak pernah gagal karena WhatsApp: galat antrean hanya dicatat sebagai warning.
+- Penyedia ada di `supabase/functions/_shared/whatsapp/provider.ts` (`FonnteProvider`). Untuk pindah ke WhatsApp API resmi, tambahkan kelas yang mengimplementasikan `WhatsAppProvider`, lalu ubah `WHATSAPP_PROVIDER`.
+- `WHATSAPP_PROVIDER=dummy` hanya untuk lokal: tidak mengirim apa pun; nomor berakhiran `9999` disimulasikan gagal.
+- Token Fonnte hanya ada di secret Edge Function, tidak pernah di database atau frontend.
+- Template hanya boleh memakai variabel `{nama} {toko} {kode} {item} {total} {jadwal} {metode} {tautan_lacak} {kurir} {alasan}` (tanpa alamat/HP).
+
 ## Tes
 
 ```bash
 npm test               # unit test frontend (normalisasi HP, matriks hak akses)
 npm run test:db        # pgTAP di PostgreSQL lokal tanpa Docker (pakai shim Supabase)
 npx supabase test db   # pgTAP di Supabase lokal (Docker)
+deno test supabase/functions/_shared/whatsapp/   # unit test penyedia WhatsApp (Deno)
 npm run test:e2e       # E2E API ke Supabase lokal; butuh SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
                        # (opsional INVITE_FN_URL bila Edge Function dijalankan di luar `supabase start`)
 ```
@@ -73,7 +92,7 @@ npm run test:e2e       # E2E API ke Supabase lokal; butuh SUPABASE_URL, SUPABASE
 
 ```
 supabase/migrations/   skema, RLS, fungsi server (satu file per fase)
-supabase/functions/    Edge Functions (invite-staff)
+supabase/functions/    Edge Functions (invite-staff, whatsapp-worker, whatsapp-admin)
 supabase/tests/        tes pgTAP
 supabase/seed.sql      data contoh lokal
 src/lib/permissions.ts matriks hak akses (UI); penegakan sebenarnya di RLS

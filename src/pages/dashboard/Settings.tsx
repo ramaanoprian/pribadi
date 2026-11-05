@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
+import { useDeviceStatus } from '@/hooks/useWhatsApp';
 import { MessageCircle, ShieldCheck } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { errorMessage } from '@/lib/errors';
 import { formatDateTime, formatRupiah } from '@/lib/format';
 import type { Json } from '@/lib/database.types';
 import { useSettings, type Setting } from '@/hooks/useSettings';
-import { Card, PageHeader } from '@/components/ui/Card';
+import { Alert, Card, PageHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { EmptyState, ErrorState, LoadingState } from '@/components/ui/States';
+import { EmptyState, ErrorState, LoadingState, Spinner } from '@/components/ui/States';
 import { useToast } from '@/components/ui/Toast';
 
 type Opsi = { min?: number; max?: number; satuan?: string; maks_panjang?: number; pilihan?: { nilai: Json; label: string }[] };
@@ -103,6 +105,33 @@ function SettingRow({ s }: { s: Setting }) {
   );
 }
 
+function WhatsAppStatusCard() {
+  const status = useDeviceStatus();
+  const s = status.data;
+  return (
+    <Card className="flex items-start gap-3">
+      <MessageCircle className="mt-0.5 size-5 shrink-0 text-emerald-600" />
+      <div className="flex-1 space-y-2">
+        <p className="font-semibold">Koneksi WhatsApp (Fonnte)</p>
+        {status.isLoading ? (
+          <Spinner label="Memeriksa perangkat…" />
+        ) : status.isError ? (
+          <Alert tone="red">Gagal memeriksa status: {errorMessage(status.error)}</Alert>
+        ) : !s?.configured ? (
+          <Alert tone="amber">Token Fonnte belum diatur. Notifikasi tidak akan terkirim.</Alert>
+        ) : s.connected ? (
+          <p className="text-sm text-emerald-700">Perangkat terhubung{s.provider === 'dummy' ? ' (mode simulasi)' : ''}.</p>
+        ) : (
+          <Alert tone="red" title="Perangkat terputus">Pesan WhatsApp akan gagal sampai perangkat dihubungkan ulang di Fonnte.</Alert>
+        )}
+        <Link to="/dashboard/whatsapp?tab=koneksi" className="inline-block text-sm font-semibold text-brand-600 hover:underline">
+          Kelola koneksi, template & uji kirim
+        </Link>
+      </div>
+    </Card>
+  );
+}
+
 export function Settings() {
   const q = useSettings();
   const groups = new Map<string, Setting[]>();
@@ -119,13 +148,7 @@ export function Settings() {
             <p className="text-sm text-cocoa-600">Akun Owner selalu diminta kode authenticator saat masuk. Tanpa 2FA, database menolak semua akses Owner.</p>
           </div>
         </Card>
-        <Card className="flex items-start gap-3">
-          <MessageCircle className="mt-0.5 size-5 shrink-0 text-cocoa-400" />
-          <div>
-            <p className="font-semibold">Koneksi WhatsApp (Fonnte)</p>
-            <p className="text-sm text-cocoa-600">Status perangkat, template pesan, dan uji kirim tersedia di Fase 3. Token Fonnte disimpan sebagai secret server, tidak di halaman ini.</p>
-          </div>
-        </Card>
+        <WhatsAppStatusCard />
         {q.isLoading ? (
           <LoadingState />
         ) : q.isError ? (

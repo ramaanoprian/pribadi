@@ -46,6 +46,8 @@ export type PublicOrder = {
   completed_at: string | null;
   cancelled_at: string | null;
   alasan_batal: string | null;
+  /** Status notifikasi WhatsApp "pesanan diterima" (null bila tidak diantrekan) */
+  notif_wa: 'pending' | 'mengirim' | 'terkirim' | 'gagal' | null;
   items: { product_id: string | null; nama: string; satuan: string; sale_mode: SaleMode; harga: number; qty: number; subtotal: number }[];
 };
 

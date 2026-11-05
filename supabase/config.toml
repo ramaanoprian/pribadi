@@ -423,3 +423,9 @@ enabled = true
 
 [functions.invite-staff]
 verify_jwt = true
+
+[functions.whatsapp-worker]
+verify_jwt = false
+
+[functions.whatsapp-admin]
+verify_jwt = true

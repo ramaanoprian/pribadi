@@ -8,6 +8,7 @@ export type SaleMode = 'ready_stock' | 'preorder';
 export type OrderStatus = 'menunggu_konfirmasi' | 'dikonfirmasi' | 'siap' | 'selesai' | 'dibatalkan';
 export type Fulfillment = 'ambil' | 'antar';
 export type PaymentStatus = 'belum_bayar' | 'lunas';
+export type WaStatus = 'pending' | 'mengirim' | 'terkirim' | 'gagal';
 
 export type Database = {
   public: {
@@ -281,6 +282,40 @@ export type Database = {
         Update: { value?: string };
         Relationships: [];
       };
+      whatsapp_templates: {
+        Row: { tahap: string; judul: string; isi: string; aktif: boolean; urutan: number; updated_by: string | null; updated_at: string };
+        Insert: never;
+        Update: { isi?: string; aktif?: boolean };
+        Relationships: [];
+      };
+      whatsapp_messages: {
+        Row: {
+          id: string;
+          order_id: string | null;
+          customer_id: string | null;
+          tahap: string;
+          to_phone: string;
+          body: string;
+          status: WaStatus;
+          attempts: number;
+          max_attempts: number;
+          next_attempt_at: string;
+          last_attempt_at: string | null;
+          locked_at: string | null;
+          last_error: string | null;
+          provider: string | null;
+          provider_message_id: string | null;
+          sent_at: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [
+          { foreignKeyName: 'whatsapp_messages_order_id_fkey'; columns: ['order_id']; isOneToOne: false; referencedRelation: 'orders'; referencedColumns: ['id'] },
+        ];
+      };
       audit_logs: {
         Row: {
           id: number;
@@ -354,6 +389,9 @@ export type Database = {
       mark_order_ready: { Args: { p_id: string }; Returns: undefined };
       complete_order: { Args: { p_id: string }; Returns: undefined };
       cancel_order: { Args: { p_id: string; p_alasan: string }; Returns: undefined };
+      my_effective_role: { Args: Record<string, never>; Returns: string | null };
+      wa_resend: { Args: { p_id: string }; Returns: undefined };
+      wa_enqueue_test: { Args: { p_to: string; p_pesan?: string | null }; Returns: string };
       adjust_product_stock: { Args: { p_product_id: string; p_delta: number; p_alasan: string }; Returns: number };
     };
     Enums: { app_role: AppRole; sale_mode: SaleMode; order_status: OrderStatus; fulfillment: Fulfillment; payment_status: PaymentStatus };

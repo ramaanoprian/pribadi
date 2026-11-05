@@ -7,6 +7,8 @@ import { errorMessage } from '@/lib/errors';
 import { formatDateTime, formatRupiah } from '@/lib/format';
 import { FULFILLMENT_LABEL } from '@/lib/orders';
 import { StatusBadge } from '@/components/order/OrderParts';
+import { useDeviceStatus } from '@/hooks/useWhatsApp';
+import { Alert } from '@/components/ui/Card';
 import { ROLE_LABEL } from '@/lib/permissions';
 import { Card, PageHeader } from '@/components/ui/Card';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/States';
@@ -23,6 +25,37 @@ function Stat({ icon, label, value, to }: { icon: React.ReactNode; label: string
     </Card>
   );
   return to ? <Link to={to}>{body}</Link> : body;
+}
+
+function WhatsAppAlerts({ owner }: { owner: boolean }) {
+  const failed = useQuery({
+    queryKey: ['wa_messages', 'gagal_count'],
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const { count, error } = await supabase.from('whatsapp_messages').select('id', { count: 'exact', head: true }).eq('status', 'gagal');
+      if (error) throw error;
+      return count ?? 0;
+    },
+  });
+  const device = useDeviceStatus(owner);
+  const disconnected = owner && device.data && (!device.data.configured || !device.data.connected);
+  if (!failed.data && !disconnected) return null;
+  return (
+    <div className="space-y-3">
+      {disconnected && (
+        <Alert tone="red" title={device.data!.configured ? 'Perangkat WhatsApp terputus' : 'Token Fonnte belum diatur'}>
+          Notifikasi ke pelanggan tidak terkirim. <Link to="/dashboard/whatsapp?tab=koneksi" className="font-semibold underline">Periksa koneksi</Link>
+        </Alert>
+      )}
+      {failed.data ? (
+        <Alert tone="amber" title={`${failed.data} pesan WhatsApp gagal terkirim`}>
+          <Link to="/dashboard/whatsapp" className="font-semibold underline">
+            Lihat log & kirim ulang
+          </Link>
+        </Alert>
+      ) : null}
+    </div>
+  );
 }
 
 function OperationalOverview() {
@@ -174,6 +207,7 @@ export function Overview() {
         description={`Anda masuk sebagai ${profile ? ROLE_LABEL[profile.role] : ''}.`}
       />
       <div className="space-y-8">
+        <WhatsAppAlerts owner={profile?.role === 'owner'} />
         <OperationalOverview />
         {profile?.role === 'owner' && (
           <section>

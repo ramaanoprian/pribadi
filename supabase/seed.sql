@@ -170,3 +170,21 @@ begin
   end loop;
 end;
 $$;
+
+-- =====================================================================
+-- FASE 3: worker WhatsApp lokal (Vault). Secret harus sama dengan
+-- WA_WORKER_SECRET di supabase/functions/.env.
+-- =====================================================================
+do $$
+begin
+  if to_regnamespace('vault') is not null then
+    if not exists (select 1 from vault.secrets where name = 'wa_worker_url') then
+      perform vault.create_secret('http://kong:8000/functions/v1/whatsapp-worker', 'wa_worker_url');
+    end if;
+    if not exists (select 1 from vault.secrets where name = 'wa_worker_secret') then
+      perform vault.create_secret('local-dev-worker-secret', 'wa_worker_secret');
+    end if;
+  end if;
+end;
+$$;
+update public.app_settings set value = '"http://localhost:5173"' where key = 'toko.url_situs';

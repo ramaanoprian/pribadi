@@ -9,6 +9,7 @@ import { formatPhone } from '@/lib/phone';
 import { uploadFile } from '@/lib/storage';
 import { FULFILLMENT_LABEL, PAYMENT_LABEL, waLink } from '@/lib/orders';
 import { OrderSummary, OrderTimeline, StatusBadge } from '@/components/order/OrderParts';
+import { OrderNotifications } from '@/components/order/OrderNotifications';
 import { Alert, Badge, Card, PageHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input, Textarea } from '@/components/ui/Field';
@@ -47,6 +48,7 @@ export function OrderDetail() {
 
   const refresh = () => {
     void qc.invalidateQueries({ queryKey: ['orders'] });
+    void qc.invalidateQueries({ queryKey: ['wa_messages'] });
   };
 
   const action = useMutation({
@@ -170,6 +172,7 @@ export function OrderDetail() {
             <h2 className="mb-3 font-sans font-bold">Linimasa</h2>
             <OrderTimeline order={o} />
           </Card>
+          <OrderNotifications orderId={o.id} />
           {o.bukti_transfer_path && (
             <Card>
               <h2 className="font-sans font-bold">Bukti transfer</h2>

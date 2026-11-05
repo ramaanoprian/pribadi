@@ -32,7 +32,22 @@ export function OrderView({ order, isNew }: { order: PublicOrder; isNew?: boolea
     <div className="space-y-5">
       {isNew && (
         <Alert tone="green" title="Pesanan berhasil dibuat!">
-          Simpan kode pesanan <strong>{order.kode}</strong>. Konfirmasi juga dikirim ke WhatsApp {formatPhone(order.no_hp)}.
+          Simpan kode pesanan <strong>{order.kode}</strong>.{' '}
+          {order.notif_wa === 'terkirim'
+            ? `Konfirmasi sudah dikirim ke WhatsApp ${formatPhone(order.no_hp)}.`
+            : order.notif_wa === 'pending' || order.notif_wa === 'mengirim'
+              ? `Konfirmasi sedang dikirim ke WhatsApp ${formatPhone(order.no_hp)}…`
+              : null}
+        </Alert>
+      )}
+      {isNew && (order.notif_wa === 'gagal' || order.notif_wa === null) && order.status !== 'dibatalkan' && (
+        <Alert tone="amber" title="Konfirmasi WhatsApp otomatis belum terkirim">
+          <p>Silakan kirim konfirmasi pesanan ke kami secara manual agar pesanan segera diproses.</p>
+          {confirmWa && (
+            <a href={confirmWa} target="_blank" rel="noreferrer" className="mt-3 inline-flex h-11 items-center gap-2 rounded-xl bg-emerald-600 px-4 font-semibold text-white hover:bg-emerald-700">
+              <MessageCircle className="size-4" /> Konfirmasi via WhatsApp
+            </a>
+          )}
         </Alert>
       )}
       <Card>
@@ -85,7 +100,7 @@ export function OrderView({ order, isNew }: { order: PublicOrder; isNew?: boolea
           {order.fulfillment === 'antar' && !order.ongkir_diset && <p className="mt-2 text-sm text-amber-800">Tunggu konfirmasi ongkir dari admin sebelum transfer.</p>}
           {confirmWa && (
             <a href={confirmWa} target="_blank" rel="noreferrer" className="mt-3 inline-flex h-11 items-center gap-2 rounded-xl bg-emerald-600 px-4 font-semibold text-white hover:bg-emerald-700">
-              <MessageCircle className="size-4" /> Konfirmasi via WhatsApp
+              <MessageCircle className="size-4" /> Hubungi toko via WhatsApp
             </a>
           )}
         </Card>
@@ -146,7 +161,10 @@ export function TrackByToken() {
       if (error) throw error;
       return data as unknown as PublicOrder | null;
     },
-    refetchInterval: 60_000,
+    refetchInterval: (query) => {
+      const d = query.state.data;
+      return d && params.get('baru') === '1' && (d.notif_wa === 'pending' || d.notif_wa === 'mengirim') ? 4_000 : 60_000;
+    },
   });
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:py-12">

@@ -34,6 +34,7 @@ const Promos = lazy(() => import('@/pages/dashboard/Promos').then((m) => ({ defa
 const Customers = lazy(() => import('@/pages/dashboard/Customers').then((m) => ({ default: m.Customers })));
 const CustomerDetail = lazy(() => import('@/pages/dashboard/Customers').then((m) => ({ default: m.CustomerDetail })));
 const WebContent = lazy(() => import('@/pages/dashboard/WebContent').then((m) => ({ default: m.WebContent })));
+const WhatsApp = lazy(() => import('@/pages/dashboard/WhatsApp').then((m) => ({ default: m.WhatsApp })));
 const ComingSoon = lazy(() => import('@/pages/dashboard/ComingSoon').then((m) => ({ default: m.ComingSoon })));
 
 // Modul yang belum dibangun: tampil sesuai hak akses, berisi info fase.
@@ -80,6 +81,7 @@ export default function App() {
           <Route path="pelanggan" element={<RequireModule module="pelanggan"><Customers /></RequireModule>} />
           <Route path="pelanggan/:id" element={<RequireModule module="pelanggan"><CustomerDetail /></RequireModule>} />
           <Route path="konten" element={<RequireModule module="konten_web"><WebContent /></RequireModule>} />
+          <Route path="whatsapp" element={<RequireModule module="whatsapp"><WhatsApp /></RequireModule>} />
           <Route path="log-aktivitas" element={<RequireModule module="log_aktivitas"><ActivityLog /></RequireModule>} />
           <Route path="pengaturan" element={<RequireModule module="pengaturan"><Settings /></RequireModule>} />
           {upcoming.map((item) => (
