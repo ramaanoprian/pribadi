@@ -7,5 +7,5 @@ Disallow: /keranjang
 Disallow: /lacak/
 Disallow: /atur-kata-sandi
 
-# Ganti domain di bawah setelah website online.
-Sitemap: https://gutvibes.id/sitemap.xml
+# Ganti domain di bawah bila memakai domain sendiri.
+Sitemap: https://pribadi-kappa.vercel.app/sitemap.xml
